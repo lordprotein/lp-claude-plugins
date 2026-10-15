@@ -2,18 +2,6 @@
 
 A comprehensive code review skill for AI agents. Performs structured reviews with a senior engineer lens, covering architecture, security, performance, and code quality.
 
-## Installation
-
-```bash
-npx skills add lordprotein/lp-code-review
-```
-
-Or via Agent Skills:
-
-```bash
-npx agent-skills-cli install @lordprotein/lp-code-review
-```
-
 ## Features
 
 - **SOLID Principles** - Detect SRP, OCP, LSP, ISP, DIP violations
