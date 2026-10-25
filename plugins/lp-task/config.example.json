@@ -1,0 +1,56 @@
+{
+  "tracker": {
+    "type": "jira",
+    "issueUrl": "https://example.atlassian.net/browse/{key}",
+    "keyRegex": "(ACME)-(\\d+)",
+    "titleStripPrefixes": ["[FE]", "[Front]"]
+  },
+  "git": {
+    "host": "gitlab",
+    "branch": "ACME-{num}",
+    "commit": "{key}: {title}",
+    "fixCommit": "{key}: fix ({summary})",
+    "mrTitle": "{key}: {title}",
+    "ignorePaths": [".yalc/", "yalc.lock"]
+  },
+  "mrMessage": {
+    "header": "@frontend-team",
+    "clipboard": true
+  },
+  "stateDir": "~/.claude/lp-task/state",
+  "projects": [
+    {
+      "id": "web",
+      "label": "Web",
+      "path": "acme-web",
+      "pm": "yarn",
+      "lint": "npx eslint",
+      "dev": "yarn dev"
+    },
+    {
+      "id": "mobile-web",
+      "label": "Mobile web",
+      "path": "acme-mobile-web",
+      "pm": "yarn",
+      "mobile": true
+    },
+    {
+      "id": "ui-kit",
+      "label": "UI kit",
+      "path": "acme-ui-kit",
+      "pm": "pnpm",
+      "autoDetectOnly": true,
+      "notes": [
+        "Included when the task touches components imported from @acme/ui-kit",
+        "Add a changeset (pnpm changeset); apps see the changes only after a new version is published"
+      ]
+    }
+  ],
+  "planNotes": [
+    "Compare the same places in web and mobile-web: the folder structure differs (pages vs screens)"
+  ],
+  "browserTest": {
+    "forbiddenActions": ["checkout and payments", "typing credentials"],
+    "mobileViewport": "390x844"
+  }
+}

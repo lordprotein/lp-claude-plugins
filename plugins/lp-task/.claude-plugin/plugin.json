@@ -1,0 +1,7 @@
+{
+  "name": "lp-task",
+  "description": "Commands /lp-task:do (tracker task → project selection → branches → implementation), /lp-task:browser-test (full browser check via Chrome MCP), /lp-task:commit (commit the task changes in all of its projects, then offer to push), /lp-task:push (push + MR/PR), /lp-task:mr-copy (copy the team MR message again) and /lp-task:init (create a project config)",
+  "author": {
+    "name": "lordprotein"
+  }
+}

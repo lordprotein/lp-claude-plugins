@@ -1,5 +1,5 @@
 ---
-name: lp-code-test-e2e
+name: code-test-e2e
 description: "Write ideal E2E tests and review existing ones. Focused exclusively on end-to-end testing — full user journeys through a real browser. Not for unit or integration tests. Two modes: generate new E2E tests from feature analysis, or review existing E2E tests for antipatterns, flakiness, and quality issues. Framework-agnostic, based on best practices from Beck, Fowler, Cohn, Rauch, and Google."
 ---
 

@@ -4,15 +4,7 @@ A comprehensive **unit testing** skill for AI agents. Focused exclusively on uni
 
 ## Installation
 
-```bash
-npx skills add lordprotein/lp-code-test-unit
-```
-
-Or via Agent Skills:
-
-```bash
-npx agent-skills-cli install @lordprotein/lp-code-test-unit
-```
+Part of the `lp` plugin — see the root README of this repository.
 
 ## Features
 
@@ -32,7 +24,7 @@ npx agent-skills-cli install @lordprotein/lp-code-test-unit
 After installation, run:
 
 ```
-/lp-code-test-unit
+/lp:code-test-unit
 ```
 
 ### Mode 1: Generate Tests
@@ -85,7 +77,7 @@ The skill reviews existing tests for quality issues:
 ## Structure
 
 ```
-lp-code-test-unit/
+code-test-unit/
 ├── SKILL.md                           # Main skill definition
 ├── agents/
 │   └── agent.yaml                     # Agent interface config

@@ -4,15 +4,7 @@ A comprehensive **E2E testing** skill for AI agents. Focused exclusively on end-
 
 ## Installation
 
-```bash
-npx skills add lordprotein/lp-code-test-e2e
-```
-
-Or via Agent Skills:
-
-```bash
-npx agent-skills-cli install @lordprotein/lp-code-test-e2e
-```
+Part of the `lp` plugin — see the root README of this repository.
 
 ## Features
 
@@ -31,7 +23,7 @@ npx agent-skills-cli install @lordprotein/lp-code-test-e2e
 After installation, run:
 
 ```
-/lp-code-test-e2e
+/lp:code-test-e2e
 ```
 
 ### Mode 1: Generate E2E Tests
@@ -84,7 +76,7 @@ The skill reviews existing E2E tests for quality issues:
 ## Structure
 
 ```
-lp-code-test-e2e/
+code-test-e2e/
 ├── SKILL.md                              # Main skill definition
 ├── agents/
 │   └── agent.yaml                        # Agent interface config

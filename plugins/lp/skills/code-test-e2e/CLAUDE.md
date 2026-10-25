@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-**lp-code-test-e2e** — AI skill (Claude Code skill) for writing and reviewing E2E tests. Framework-agnostic (Playwright, Cypress, Selenium), focused exclusively on end-to-end testing — full user journeys through a real browser. Based on practices from Beck, Fowler, Cohn, Rauch, and Google.
+**code-test-e2e** — AI skill (Claude Code skill) for writing and reviewing E2E tests. Framework-agnostic (Playwright, Cypress, Selenium), focused exclusively on end-to-end testing — full user journeys through a real browser. Based on practices from Beck, Fowler, Cohn, Rauch, and Google.
 
 Two modes:
 - **Generate** (default) — analyze features, classify flows, produce E2E tests with Page Objects
@@ -20,7 +20,7 @@ references/           ← Knowledge base loaded on-demand during skill execution
 
 ### Skill Execution Flow
 
-The skill is invoked via `/lp-code-test-e2e`. SKILL.md defines the entire workflow:
+The skill is invoked via `/lp:code-test-e2e`. SKILL.md defines the entire workflow:
 
 **Generate mode** (7 steps): Determine scope → Preflight → Classify flows (E2E Flow Matrix) → Determine scenarios → Generate tests → Self-check antipatterns → Output
 
@@ -57,6 +57,7 @@ Each reference file is loaded at specific steps, not all at once:
 
 - `SKILL.md` is the single source of truth for the skill workflow. All mandatory steps, output formats, and rules live here.
 - `references/` files are the knowledge base. They are self-contained documents — each covers one topic fully.
+- Keep content portable: examples and instructions must work in any project — use neutral placeholders (e.g. `acme`) instead of real project names, paths, domains or other identifying details
 - `agents/agent.yaml` defines the agent interface only (display name, description, default prompt). Keep it minimal.
 - When adding a new E2E testing topic, create a new file in `references/` and add a loading instruction to the relevant step in SKILL.md.
 

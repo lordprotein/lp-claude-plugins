@@ -1,0 +1,31 @@
+{
+  "tracker": {
+    "type": "jira",
+    "issueUrl": "",
+    "keyRegex": "([A-Z][A-Z0-9]+)-(\\d+)",
+    "titleStripPrefixes": []
+  },
+  "git": {
+    "host": "gitlab",
+    "branch": "{key}",
+    "commit": "{key}: {title}",
+    "fixCommit": "{key}: fix ({summary})",
+    "mrTitle": "{key}: {title}",
+    "ignorePaths": []
+  },
+  "mrMessage": {
+    "header": "",
+    "clipboard": true
+  },
+  "stateDir": "~/.claude/lp-task/state",
+  "projects": [],
+  "planNotes": [],
+  "browserTest": {
+    "forbiddenActions": [
+      "real payments and any other money actions",
+      "typing credentials",
+      "irreversible account actions (deletion, settings changes)"
+    ],
+    "mobileViewport": "390x844"
+  }
+}

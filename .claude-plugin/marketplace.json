@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "lp-tools",
+  "description": "Personal skills and plugins by lordprotein",
+  "owner": {
+    "name": "lordprotein"
+  },
+  "plugins": [
+    {
+      "name": "lp",
+      "description": "Code review, unit and E2E tests, code explanation",
+      "source": "./plugins/lp"
+    },
+    {
+      "name": "lp-task",
+      "description": "Task flow across one or several repositories: tracker task, branches, implementation, browser check, commits, push and MR/PR",
+      "source": "./plugins/lp-task"
+    }
+  ]
+}
