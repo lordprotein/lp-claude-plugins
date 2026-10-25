@@ -1,0 +1,7 @@
+interface:
+  display_name: "Unit Test Expert"
+  short_description: "Write ideal unit tests (exclusively unit level — one unit in isolation) and review existing ones using best practices from Beck, Fowler, Khorikov, and Google"
+  default_prompt: "Analyze current code changes and generate comprehensive unit tests following AAA pattern, proper test doubles, meaningful naming, and business logic coverage. Alternatively, review existing tests for antipatterns and quality issues."
+
+# Agent-agnostic skill - works with any LLM provider.
+# No provider-specific configuration required.
