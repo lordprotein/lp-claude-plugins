@@ -14,7 +14,9 @@
     "ignorePaths": [".yalc/", "yalc.lock"]
   },
   "mrMessage": {
-    "header": "@frontend-team",
+    "header": "@acme-team",
+    "lines": ["{header} {mrTitle}", "{issueUrl}", "", "{links}"],
+    "link": "- {label} → {url}",
     "clipboard": true
   },
   "stateDir": "~/.claude/lp-task/state",

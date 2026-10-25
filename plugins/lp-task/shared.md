@@ -22,7 +22,9 @@ Take all templates, paths and the project list only from the merged config.
 - `git.commit`, `git.mrTitle` — commit message and MR title, substitute `{key}` and `{title}`.
 - `git.fixCommit` — fix commit message, substitute `{key}` and `{summary}`.
 - `git.ignorePaths` — untracked/local paths that never count as changes and are never committed.
-- `mrMessage.header` — the first line of the team MR message (e.g. a team mention); empty — no header line.
+- `mrMessage.header` — the value of `{header}` in the team MR message (e.g. a team mention).
+- `mrMessage.lines[]` — template of the team MR message, one element per line (see `## MR message`).
+- `mrMessage.link` — template of one MR link line in `{links}`.
 - `mrMessage.clipboard` — copy the MR message to the clipboard.
 - `stateDir` — where the task state is stored: `<stateDir>/<key>.json`.
 - `projects[]` — the repositories a task can span, in the order used everywhere (questions, tables, MR message):
@@ -65,27 +67,36 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
 
 ## MR message
 
-A ready-made message for the team with the MR links. Plain text (print it in a code block):
+A ready-made message for the team with the MR links, built from `mrMessage.lines` and `mrMessage.link`. Defaults:
 
-```
-<mrMessage.header>
-<mrTitle>
-
-* <label>: https://…/-/merge_requests/<id>
-* <label>: https://…/-/merge_requests/<id>
+```json
+"lines": ["{header}", "{mrTitle}", "", "{links}"],
+"link": "* {label}: {url}"
 ```
 
-- the first line is `mrMessage.header`; if it is empty — omit the line (the message starts with the title);
-- then the MR title (`git.mrTitle`);
-- after an empty line — one line per task project that has an MR: `* <label>: <link>`; do not print projects without an MR;
-- order and labels — by the order of `projects[]` in the config and their `label`.
+Placeholders in `lines`:
+- `{header}` — `mrMessage.header`;
+- `{key}`, `{num}`, `{title}` — as in the other templates (`{title}` without `tracker.titleStripPrefixes`);
+- `{mrTitle}` — the MR title built from `git.mrTitle`;
+- `{issueUrl}` — `tracker.issueUrl` with `{key}` substituted; empty if `tracker.issueUrl` is empty;
+- `{links}` — only as the whole line: expands into one line per task project that has an MR, built from `link`; projects without an MR are not printed; order — by `projects[]` in the config.
 
-Slack turns `* ` into a list only while typing, pasted plain text stays as is. So the clipboard gets HTML together with the plain text — Slack pastes the HTML as a real bulleted list:
+Placeholders in `link`: `{label}` (project `label`), `{id}` (project `id`), `{url}` (MR/PR link), `{base}` (target branch).
 
-```
-<meta charset="utf-8"><div><mrMessage.header></div><div><mrTitle></div><div><br></div><ul><li><label>: <a href="<link>"><link></a></li>…</ul>
-```
+Building the plain text:
+1. Substitute the placeholders in every line; an unknown placeholder stays as is.
+2. Drop a line that has placeholders and all of them are empty (an empty `header` or `issueUrl` leaves no empty line). A literally empty line `""` stays — it is a separator.
+3. Collapse several empty lines in a row into one, drop empty lines at the start and the end.
+4. If the template has no `{links}` — the links are not printed (the project chose so).
 
-Omit the header `<div>` if the header is empty. Escape `&`, `<`, `>` in the header and the title for the HTML.
+Print the plain text in a code block.
 
-Copy only if `mrMessage.clipboard` is `true` and the OS is macOS: `osascript -l JavaScript "${CLAUDE_PLUGIN_ROOT}/scripts/copy-rich.js" "<html>" "<plain text>"` (plain text lines start at column 0, no leading spaces, no trailing newline). After that say in one line that the message is already in the clipboard and will paste into Slack as a list. Otherwise only print it.
+Slack turns `* ` / `- ` into a list only while typing, pasted plain text stays as is. So the clipboard gets HTML together with the plain text. Build the HTML from the same lines:
+- start with `<meta charset="utf-8">`;
+- every line → `<div>…</div>`, an empty line → `<div><br></div>`;
+- the `{links}` block: if `link` starts with `* ` or `- ` — one `<ul>` with a `<li>` per link, without that marker; otherwise every link line is a separate `<div>`;
+- escape `&`, `<`, `>` in the text, then wrap every `http(s)://…` URL in `<a href="<url>"><url></a>`.
+
+Example of the default HTML: `<meta charset="utf-8"><div>@team</div><div>ACME-1: Title</div><div><br></div><ul><li>Web: <a href="https://…">https://…</a></li></ul>`.
+
+Copy only if `mrMessage.clipboard` is `true` and the OS is macOS: `osascript -l JavaScript "${CLAUDE_PLUGIN_ROOT}/scripts/copy-rich.js" "<html>" "<plain text>"` (plain text lines start at column 0, no leading spaces, no trailing newline). After that say in one line that the message is already in the clipboard and will paste into Slack with formatting. Otherwise only print it.

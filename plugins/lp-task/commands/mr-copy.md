@@ -18,7 +18,7 @@ Read-only: do not push, do not change the state.
 
 ## Message
 
-Build `<mrTitle>` from the state `title` (`git.mrTitle`, `tracker.titleStripPrefixes`) and the links from `projects[].mr`.
+Take the placeholders of `mrMessage.lines` from the state: `{key}` from `key`, `{num}` via `tracker.keyRegex`, `{title}` from `title` (`tracker.titleStripPrefixes`), `{mrTitle}` via `git.mrTitle`, `{issueUrl}` via `tracker.issueUrl`; the links from `projects[].mr`, `{base}` from `projects[].base`.
 
 If no project has `mr` — say that there are no MRs yet and suggest `/lp-task:push`; do not touch the clipboard.
 
