@@ -1,12 +1,12 @@
 # E2E Test Review Checklist
 
-Structured checklist for reviewing E2E tests. Use the Quick-Start Review Sequence at the bottom for the recommended order.
+Structured checklist for reviewing E2E tests. Order of checks: SKILL.md Mode 2 step 2.
 
 ---
 
 ## 1. Four Pillars Assessment for E2E
 
-> Apply Four Pillars from `e2e-testing-principles.md`. Key checks per pillar:
+> Determinism and resistance to refactoring are non-negotiable: a flaky test is worse than no test. Key checks per pillar:
 
 - [ ] **Confidence**: Critical journeys covered, happy + sad paths, risk-tagged flows have E2E
 - [ ] **Resistance to Refactoring**: Accessible selectors, user-visible outcomes, Page Objects encapsulate details
@@ -17,27 +17,7 @@ Structured checklist for reviewing E2E tests. Use the Quick-Start Review Sequenc
 
 ## 2. Antipattern Detection
 
-### 🔴 Critical — Must fix immediately
-
-- [ ] **The False Prophet** — tests without meaningful visible-outcome assertions
-- [ ] **The Data Leaker** — shared mutable test data across tests
-- [ ] **The Chain Gang (severe)** — tests completely dependent on execution order
-
-### 🟠 High — Should fix before merge
-
-- [ ] **The Sleeper** — `sleep()` / hardcoded waits
-- [ ] **The Chain Gang (moderate)** — soft dependencies between tests
-- [ ] **The CSS Sniper** — CSS/XPath selectors instead of accessible ones
-- [ ] **The UI Typist** — UI login repeated in every test
-- [ ] **The Retry Masker** — retries hiding real flakiness
-- [ ] **The Greedy Test** — one test covers too many unrelated flows
-- [ ] **The Network Optimist** — no error or timeout scenario tests
-- [ ] **The Ice Cream Cone** — too many E2E tests, too few unit tests
-
-### 🟡 Medium — Fix in this PR or follow-up
-
-- [ ] **The Environment Prisoner** — hardcoded environment values
-- [ ] **The Pixel Watcher** — screenshot comparison for functional assertions
+Check all 12 antipatterns from `e2e-antipatterns-checklist.md` (Quick Reference Detection Table gives signal and severity).
 
 ---
 
@@ -125,21 +105,3 @@ Structured checklist for reviewing E2E tests. Use the Quick-Start Review Sequenc
 - [ ] Comments explain non-obvious scenarios or workarounds
 - [ ] Test files organized by feature or flow (not by page or component)
 
----
-
-## Quick-Start Review Sequence
-
-When reviewing E2E tests, follow this exact order. Stop and report as soon as 🔴 Critical issues are found.
-
-| Step | Check                    | Severity     | What to look for                                   |
-|------|--------------------------|--------------|-----------------------------------------------------|
-| 1    | False Prophets           | 🔴 Critical  | Meaningful visible-outcome assertions?              |
-| 2    | Flakiness                | 🔴 Critical  | Non-deterministic elements? Race conditions? Shared data? |
-| 3    | Isolation                | 🔴 Critical  | Tests independent? Own data? No order dependency?   |
-| 4    | Waits                    | 🟠 High      | `sleep()`? Proper wait-for-condition strategy?      |
-| 5    | Selectors                | 🟠 High      | CSS/XPath? Accessible selectors used?               |
-| 6    | Coverage                 | 🟠 High      | Critical user journeys tested?                      |
-| 7    | Abstraction              | 🟠 High      | Page Objects? Code duplication?                     |
-| 8    | Data management          | 🟠 High      | API setup? Cleanup? Data isolation?                 |
-| 9    | Readability              | 🟡 Medium    | Clear names? AAA structure? Comments?               |
-| 10   | Auth efficiency          | 🟠 High      | Programmatic auth? Storage state reuse?             |

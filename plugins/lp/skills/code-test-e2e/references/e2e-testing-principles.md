@@ -48,52 +48,9 @@ Every E2E test should maximize all four properties simultaneously:
 
 ---
 
-## E2E Flow Classification Matrix
+## E2E Flow Classification Matrix and Risk Tags
 
-Classify each flow by two dimensions to decide E2E investment:
-
-| Business Criticality \ Flow Complexity | Low | Medium | High |
-|----------------------------------------|-----|--------|------|
-| **Critical** | Core CRUD -- few focused tests | **Critical Journeys -- sweet spot**, test thoroughly (happy + sad + edge) | System integration -- key happy paths, supplement with monitoring |
-| **Important** | Happy path only | Happy + primary sad paths | Happy path + monitoring/alerting |
-| **Nice-to-have** | Skip E2E entirely | Skip or single smoke test | Contract tests instead of E2E |
-
-### How to use the matrix
-
-1. List all user-facing flows in the application
-2. Rate each flow on both axes
-3. Apply the investment level from the cell
-4. Check for risk tags (see below) that override the decision
-5. Sum up -- if total exceeds the 5-10% budget, cut from the bottom-right
-
----
-
-## Risk Tags
-
-Some flows carry inherent risk that overrides the classification matrix:
-
-| Tag | Description | Example |
-|-----|-------------|---------|
-| `PAYMENT` | Money movement, billing, subscriptions | Checkout, refund, plan upgrade |
-| `AUTH` | Authentication, authorization, session management | Login, password reset, role-based access |
-| `DATA_INTEGRITY` | Data creation, mutation, deletion with no undo | Bulk delete, data import, account merge |
-| `PII` | Personally identifiable information handling | Profile editing, data export, consent |
-| `COMPLIANCE` | Regulatory requirements (GDPR, HIPAA, SOX) | Audit trail, data retention, consent flows |
-
-### Risk tag rules
-
-- Any risk tag present -> E2E required (at minimum happy path)
-- A "nice-to-have" feature with `PAYMENT` tag -> must have E2E
-- Multiple tags = higher priority (e.g. `PAYMENT` + `PII` = top priority)
-- Risk-tagged flows should be the first tests written in a new project
-
-### Decision rules (in order)
-
-1. Any risk tag present -> E2E required (at minimum happy path)
-2. Critical x Medium = always the sweet spot for E2E investment
-3. Nice-to-have without risk tags -> skip E2E, cover with unit/integration
-4. High complexity -> consider contract tests + selective E2E for key paths
-5. When in doubt, write fewer, stronger E2E tests rather than many weak ones
+Defined in SKILL.md, Mode 1 step 2 (matrix, risk tags, decision rules, 5-10% budget).
 
 ---
 

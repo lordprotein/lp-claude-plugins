@@ -20,24 +20,9 @@ axe-core is the industry standard for automated accessibility testing. It can be
 - Covers ~57% of WCAG 2.1 rules (the automatable subset)
 
 ```
-# Add a11y check at key points in any E2E test
-test_checkout_is_accessible():
-    navigate_to("/checkout")
-    results = run_axe()                          # Run axe-core on current page
-    assert results.violations.count == 0
-
-    # Check again after significant UI change
-    fill_form(shipping_info)
-    results = run_axe()
-    assert results.violations.count == 0
-```
-
-```
-# Scope axe-core to a specific region
-test_modal_is_accessible():
-    open_modal("Confirm order")
-    results = run_axe(scope="[role='dialog']")   # Only check the modal
-    assert results.violations.count == 0
+results = run_axe()                          # whole page; re-run after significant UI changes
+results = run_axe(scope="[role='dialog']")   # scope to a region, e.g. an open modal
+assert results.violations.count == 0
 ```
 
 ---
@@ -187,29 +172,8 @@ assert page.locator("[aria-live='polite']").is_visible()
 You do not need a separate a11y test suite. Add axe-core checks into existing flow tests:
 
 ```
-# BAD — separate, disconnected a11y test
-test_checkout_a11y():
-    navigate_to("/checkout")
-    results = run_axe()
-    assert results.violations.count == 0
-    # Doesn't test any real flow — just a static page scan
-
-# GOOD — a11y check embedded in flow test
-test_checkout_flow():
-    navigate_to("/checkout")
-    results = run_axe()
-    assert results.violations.count == 0
-
-    fill_shipping_form(address)
-    click_continue()
-    results = run_axe()                          # Check after state change
-    assert results.violations.count == 0
-
-    fill_payment_form(card)
-    click_place_order()
-    assert page.has_text("Order confirmed")
-    results = run_axe()                          # Check final state
-    assert results.violations.count == 0
+# BAD: separate test that only scans a static page, no real flow
+# GOOD: run_axe() + assert no violations inside the flow test: on load, after each step, at the final state
 ```
 
 This way, a11y coverage grows with your E2E suite automatically.

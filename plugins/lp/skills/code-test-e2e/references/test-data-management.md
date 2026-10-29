@@ -63,14 +63,10 @@ Rules:
 - Never seed test-specific data -- that belongs in test setup
 
 ```
-# GOOD — idempotent seed for reference data
-seed_reference_data():
-    for category in ["Electronics", "Clothing", "Books"]:
-        api.post("/categories", {name: category}, ignore_conflict=true)
-
-# BAD — seed that creates test-specific data
-seed():
-    api.post("/users", {name: "TestAdmin", role: "admin"})  # Will conflict on second run
+# GOOD: idempotent seed for reference data
+api.post("/categories", {name: "Electronics"}, ignore_conflict=true)
+# BAD: seed creates test-specific data, conflicts on second run
+api.post("/users", {name: "TestAdmin", role: "admin"})
 ```
 
 ---
@@ -188,21 +184,10 @@ When tests require hundreds or thousands of records (pagination, search, filteri
 - Test search/filtering with controlled, predictable datasets
 
 ```
-# GOOD — controlled dataset for pagination test
-global_setup():
-    test_run = uuid()
-    for i in range(55):
-        ProductFactory.create(name=f"Product-{test_run}-{i}")
-    return {test_run, total: 55}
-
-test_pagination_shows_correct_pages(global_data):
-    navigate("/products?search=" + global_data.test_run)
-    assert page.text("Page 1 of 3")  # 55 items / 20 per page = 3 pages
-    click("Next")
-    assert page.text("Page 2 of 3")
-
-global_teardown(global_data):
-    api.delete("/products?prefix=Product-" + global_data.test_run)
+# GOOD: controlled dataset for pagination, tagged with the run ID
+global_setup():    55 x ProductFactory.create(name=f"Product-{test_run}-{i}")
+test_pagination(): navigate("/products?search=" + test_run); assert page.text("Page 1 of 3")
+global_teardown(): api.delete("/products?prefix=Product-" + test_run)
 ```
 
 - Keep bulk datasets tagged with the test run ID for reliable cleanup

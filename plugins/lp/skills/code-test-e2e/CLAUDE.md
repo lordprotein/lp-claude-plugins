@@ -26,7 +26,7 @@ The skill is invoked via `/lp:code-test-e2e`. SKILL.md defines the entire workfl
 
 **Review mode** (4 steps): Preflight → Evaluate against checklist → Assess severity → Output
 
-Steps marked MANDATORY in SKILL.md must load specific reference files before execution — this is enforced by the workflow, not optional.
+Steps marked «Required: load X» in SKILL.md must load specific reference files before execution — this is enforced by the workflow, not optional.
 
 ### References (Knowledge Base)
 
@@ -34,11 +34,11 @@ Each reference file is loaded at specific steps, not all at once:
 
 | File | Loaded When |
 |------|-------------|
-| `e2e-testing-principles.md` | Step 2 (Classify flows) |
+| `e2e-testing-principles.md` | Step 2, optional (the matrix and risk tags live in SKILL.md) |
 | `user-flow-testing.md` | Step 3 (Determine scenarios) |
 | `e2e-test-design-patterns.md` | Step 4 (Generate tests) |
-| `network-and-api-handling.md` | Step 4 (Generate tests) |
-| `waiting-and-synchronization.md` | Step 4 (Generate) / Step 2 (Review) |
+| `network-and-api-handling.md` | Step 4, only for third-party services, GraphQL, WebSocket, error simulation or clock control |
+| `waiting-and-synchronization.md` | Step 4, only for animations, polling, slow or async operations / Step 2 (Review) |
 | `test-data-management.md` | Step 4, only if data setup needed |
 | `accessibility-in-e2e.md` | Step 4, only if a11y checks selected |
 | `e2e-antipatterns-checklist.md` | Step 5 (Self-check) / Step 2 (Review) |

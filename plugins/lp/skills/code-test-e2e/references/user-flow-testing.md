@@ -83,37 +83,16 @@ test_payment_failure_does_not_create_order():
 
 Wizard and stepper flows need specific test coverage:
 
-### Forward progression
+### Forward progression and back navigation
 
 ```
 test_checkout_wizard_completes_all_steps():
-    checkout = CheckoutPage(page)
+    checkout.fill_shipping(...); checkout.next_step(); assert checkout.current_step == "Payment"
+    checkout.fill_payment(...); checkout.next_step(); assert checkout.current_step == "Review"
+    assert checkout.place_order().success_message == "Order placed!"
 
-    # Step 1: Shipping
-    checkout.fill_shipping(address="123 Main St")
-    checkout.next_step()
-    assert checkout.current_step == "Payment"
-
-    # Step 2: Payment
-    checkout.fill_payment(card="4111111111111111")
-    checkout.next_step()
-    assert checkout.current_step == "Review"
-
-    # Step 3: Review and confirm
-    confirmation = checkout.place_order()
-    assert confirmation.success_message == "Order placed!"
-```
-
-### Back navigation and state preservation
-
-```
 test_checkout_preserves_state_on_back_navigation():
-    checkout = CheckoutPage(page)
-    checkout.fill_shipping(address="123 Main St")
-    checkout.next_step()
-    checkout.go_back()
-
-    # State must be preserved
+    checkout.fill_shipping(address="123 Main St"); checkout.next_step(); checkout.go_back()
     assert checkout.shipping_address == "123 Main St"
 ```
 
@@ -177,21 +156,9 @@ Test full lifecycle in one test (Create -> Read -> Update -> Delete) or separate
 
 ```
 test_product_crud_lifecycle():
-    products = ProductsPage(page)
-    new_product = products.create(name="Widget", price=29.99)
-    assert new_product.name == "Widget"
-
-    products.navigate_to_list()
-    assert products.has_product("Widget")
-
-    edit_page = products.open_product("Widget")
-    edit_page.update_price(39.99)
-    edit_page.save()
-    assert edit_page.price == "$39.99"
-
-    edit_page.delete()
-    products.navigate_to_list()
-    assert not products.has_product("Widget")
+    products.create(name="Widget", price=29.99)        -> assert products.has_product("Widget")
+    products.open_product("Widget").update_price(39.99) -> assert edit_page.price == "$39.99"
+    edit_page.delete()                                  -> assert not products.has_product("Widget")
 ```
 
 ---

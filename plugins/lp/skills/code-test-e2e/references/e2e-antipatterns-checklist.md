@@ -114,16 +114,7 @@ page.fill(label="Email", value="test@test.com")
 page.click(role="button", name="Confirm")
 ```
 
-**Fix:** Use selector priority:
-
-| Priority | Selector Type | Example                                |
-|----------|---------------|----------------------------------------|
-| 1        | Role          | `role="button", name="Submit"`         |
-| 2        | Label         | `label="Email"`                        |
-| 3        | Text          | `text="Submit order"`                  |
-| 4        | Placeholder   | `placeholder="Enter email"`            |
-| 5        | test-id       | `data-testid="submit-btn"`             |
-| NEVER    | CSS/XPath     | `.btn-primary`, `//div[@class="..."]`  |
+**Fix:** Use selector priority role > label > text > placeholder > test-id, NEVER CSS/XPath (SKILL.md Selectors).
 
 ---
 

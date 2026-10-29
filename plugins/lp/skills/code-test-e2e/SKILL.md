@@ -1,6 +1,6 @@
 ---
 name: code-test-e2e
-description: "Write ideal E2E tests and review existing ones. Focused exclusively on end-to-end testing — full user journeys through a real browser. Not for unit or integration tests. Two modes: generate new E2E tests from feature analysis, or review existing E2E tests for antipatterns, flakiness, and quality issues. Framework-agnostic, based on best practices from Beck, Fowler, Cohn, Rauch, and Google."
+description: "Generate or review E2E tests only: full user journeys through a real browser. Generates tests from feature analysis, reviews for antipatterns and flakiness. Not for unit or integration tests."
 ---
 
 # E2E Test Expert
@@ -28,7 +28,7 @@ This skill is focused **exclusively on E2E testing**:
 | Badge | Level | Description | Action |
 |-------|-------|-------------|--------|
 | 🔴 | **Critical** | False confidence (test passes but doesn't verify outcome), flaky tests (non-deterministic pass/fail), shared test data (tests pollute each other) | Must fix immediately |
-| 🟠 | **High** | sleep()/hardcoded waits, test order dependency, UI login in every test, fragile selectors (CSS/XPath), missing critical flow coverage | Should fix before merge |
+| 🟠 | **High** | sleep()/hardcoded waits, test order dependency, UI login in every test, fragile selectors (CSS/XPath), missing critical flow coverage, no Page Objects | Should fix before merge |
 | 🟡 | **Medium** | Readability, naming, poor test organization, environment-specific tests | Fix in this PR or follow-up |
 | 🟢 | **Low** | Style, minor suggestions | Optional improvement |
 
@@ -38,7 +38,7 @@ This skill is focused **exclusively on E2E testing**:
 
 ### 0) Determine test scope
 
-**MANDATORY** — you MUST perform this step BEFORE preflight. Do NOT skip it.
+Required, before preflight.
 
 - Analyze the application and determine which flow categories are present:
   - **Critical user journeys** — auth, checkout, payment, data creation/deletion
@@ -71,25 +71,32 @@ This skill is focused **exclusively on E2E testing**:
 
 ### 2) Classify flows (E2E Flow Matrix)
 
-**MANDATORY** — you MUST load and apply the classification matrix. Do NOT skip this step, do NOT generate tests without classifying first.
+Required: classify every flow before generating tests. List the user-facing flows, rate each on **business criticality** x **flow complexity**, apply the cell, then check risk tags.
 
-- Load `references/e2e-testing-principles.md` for the E2E Flow Classification Matrix.
-- Categorize each user flow using two axes: **business criticality** x **flow complexity** + **risk tags**.
+| Criticality \ Complexity | Low | Medium | High |
+|--------------------------|-----|--------|------|
+| **Critical** | Core CRUD: few focused tests | **Critical journeys, the sweet spot**: test thoroughly (happy + sad + edge) | System integration: key happy paths, supplement with monitoring |
+| **Important** | Happy path only | Happy + primary sad paths | Happy path + monitoring/alerting |
+| **Nice-to-have** | Skip E2E entirely | Skip or single smoke test | Contract tests instead of E2E |
 
-Apply the **E2E Flow Classification Matrix** from the loaded `e2e-testing-principles.md` reference.
+**Risk tags**: `PAYMENT` (money movement, billing, subscriptions), `AUTH` (authentication, authorization, sessions), `DATA_INTEGRITY` (create, mutate or delete with no undo: bulk delete, import, merge), `PII` (personal data: profile, export, consent), `COMPLIANCE` (GDPR, HIPAA, SOX: audit trail, retention).
 
-Risk tags (`PAYMENT`, `AUTH`, `DATA_INTEGRITY`, `PII`, `COMPLIANCE`) override the matrix — always require E2E regardless of position.
+Decision rules, in order:
+1. Any risk tag overrides the matrix: E2E required (at minimum happy path), even for a nice-to-have flow. Multiple tags = higher priority; risk-tagged flows are written first.
+2. Critical x Medium is always the sweet spot for E2E investment.
+3. Nice-to-have without risk tags: skip E2E, recommend unit/integration instead.
+4. High complexity or cross-service: contract tests + selective E2E for key paths.
+5. When in doubt, write fewer, stronger tests. If a bug can be caught by a cheaper test type, use that type.
+6. Budget: E2E is 5-10% of all tests. If the total exceeds it, cut from the bottom-right of the matrix.
 
 - Report classification to user before generating tests.
-- For nice-to-have + low complexity: recommend skipping E2E, suggest unit/integration instead.
-- For overcomplicated cross-service flows: recommend contract tests + selective E2E.
+- Optional: load `references/e2e-testing-principles.md` only to justify E2E vs lower-level tests (four pillars, pyramid, FIRST, signs of too many/few E2E tests).
 
 ### 3) Determine scenarios
 
-**MANDATORY** — you MUST load scenario identification techniques before determining scenarios. Do NOT rely on general knowledge alone.
+Required: load `references/user-flow-testing.md` (scenario identification, budget per flow).
 
-- Load `references/user-flow-testing.md` for flow scenario identification.
-- For each classified flow, identify (3-8 scenarios per flow — E2E tests are expensive):
+- For each classified flow, identify:
   - **Happy path**: The primary successful user journey — always first
   - **Critical sad paths**: Payment failure, auth rejection, data validation failure
   - **State transitions**: Multi-step navigation, back/forward, resume after interruption
@@ -99,14 +106,13 @@ Risk tags (`PAYMENT`, `AUTH`, `DATA_INTEGRITY`, `PII`, `COMPLIANCE`) override th
 
 ### 4) Generate tests
 
-**MANDATORY** — you MUST load the reference files listed below before generating any test code.
+Required before writing test code: load `references/e2e-test-design-patterns.md` (POM, selectors, auth). Also load, only when it applies:
+- `references/network-and-api-handling.md`: the flow calls external/third-party services, GraphQL or WebSocket, or needs error simulation or clock control
+- `references/waiting-and-synchronization.md`: animations, polling, slow/async operations, or timeout tuning
+- `references/test-data-management.md`: test data setup needed
+- `references/accessibility-in-e2e.md`: accessibility checks selected
 
-- Load `references/e2e-test-design-patterns.md` for patterns (POM, selectors, auth).
-- Load `references/network-and-api-handling.md` for network mocking strategy.
-- Load `references/waiting-and-synchronization.md` for wait strategies.
-- **If test data setup needed** → also load `references/test-data-management.md` for data setup patterns.
-- **If accessibility checks selected** → also load `references/accessibility-in-e2e.md` for a11y integration.
-- Apply these rules:
+Apply these rules:
 
 **Structure:**
 - Follow AAA pattern adapted for E2E: Arrange (navigate + API setup) → Act (UI interactions) → Assert (visible outcome)
@@ -116,7 +122,7 @@ Risk tags (`PAYMENT`, `AUTH`, `DATA_INTEGRITY`, `PII`, `COMPLIANCE`) override th
 - Group tests by feature/flow using describe/context
 
 **Selectors (priority order):**
-- role > label > text > placeholder > test-id > NEVER css/xpath
+- role > label > text > placeholder > test-id > NEVER css/xpath (full rules in design patterns)
 - Document selector strategy choice in Page Objects
 
 **Naming:**
@@ -155,10 +161,7 @@ Risk tags (`PAYMENT`, `AUTH`, `DATA_INTEGRITY`, `PII`, `COMPLIANCE`) override th
 
 ### 5) Self-check against antipatterns
 
-**MANDATORY** — you MUST load the antipatterns checklist and run EVERY check below for EACH generated test. Do NOT output tests without completing this verification.
-
-- Load `references/e2e-antipatterns-checklist.md`.
-- Before outputting, verify each generated test against:
+Required: load `references/e2e-antipatterns-checklist.md` and run every check below for each generated test before output:
   - [ ] Not a False Prophet — has meaningful visible-outcome assertions
   - [ ] Not a Sleeper — no sleep()/hardcoded waits
   - [ ] Not a Chain Gang — tests are independent, run in any order
@@ -247,13 +250,9 @@ Risk tags (`PAYMENT`, `AUTH`, `DATA_INTEGRITY`, `PII`, `COMPLIANCE`) override th
 
 ### 2) Evaluate against checklist
 
-**MANDATORY** — you MUST load ALL THREE reference files below. Do NOT evaluate from memory alone.
+Required: load all three, do not evaluate from memory: `references/e2e-test-review-checklist.md`, `references/e2e-antipatterns-checklist.md`, `references/waiting-and-synchronization.md`.
 
-- Load `references/e2e-test-review-checklist.md` for the full checklist.
-- Load `references/e2e-antipatterns-checklist.md` for antipattern detection.
-- Load `references/waiting-and-synchronization.md` for wait strategy assessment.
-
-**MANDATORY procedure** — follow this exact sequence for every review. Do NOT skip steps or merge findings:
+Follow this exact sequence for every review, without skipping steps or merging findings:
 1. **Scan for False Prophets** (🔴 Critical) — meaningful visible-outcome assertions?
 2. **Check flakiness risk** (🔴 Critical) — non-deterministic elements? race conditions?
 3. **Check test isolation** (🔴 Critical) — shared test data? order dependency?
@@ -267,11 +266,7 @@ Risk tags (`PAYMENT`, `AUTH`, `DATA_INTEGRITY`, `PII`, `COMPLIANCE`) override th
 
 ### 3) Assess severity
 
-Assign severity to each finding:
-- 🔴 **Critical**: False confidence (no real assertion), flaky tests, shared mutable test data
-- 🟠 **High**: sleep()/hardcoded waits, CSS/XPath selectors, UI login everywhere, test order dependency, missing critical flows, no Page Objects
-- 🟡 **Medium**: Readability, naming, poor organization, environment-specific code
-- 🟢 **Low**: Style, minor suggestions
+Assign severity to each finding per the Severity Levels table above (per-antipattern severities are in the antipatterns checklist).
 
 ### 4) Output format
 
@@ -349,20 +344,3 @@ Please choose an option or provide specific instructions.
 
 **Important**: Do NOT implement any changes until user explicitly confirms. This is a review-first workflow.
 
----
-
-## Resources
-
-### references/
-
-| File | Purpose |
-|------|---------|
-| `e2e-testing-principles.md` | Four pillars for E2E, FIRST adapted, test pyramid, E2E Flow Classification Matrix |
-| `e2e-test-design-patterns.md` | Page Object Model, Screenplay, AAA for E2E, selectors, auth strategy |
-| `user-flow-testing.md` | Critical paths, happy/sad, multi-step workflows, CRUD lifecycle |
-| `test-data-management.md` | API-based setup, factories, isolation, cleanup |
-| `network-and-api-handling.md` | Network mocking, request interception, MSW, error simulation |
-| `waiting-and-synchronization.md` | No sleep(), auto-waiting, explicit waits, retry, timeouts |
-| `accessibility-in-e2e.md` | axe-core, WCAG, keyboard nav, focus management |
-| `e2e-antipatterns-checklist.md` | 12 antipatterns with examples, detection, and fixes |
-| `e2e-test-review-checklist.md` | Structured review checklist for E2E tests by severity |

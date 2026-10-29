@@ -139,17 +139,6 @@ Use the most stable, user-centric selector available:
 
 ### Why this order matters
 
-```
-# BAD -- CSS selector: breaks when class name changes
-page.click(".btn-primary.submit-form")
-
-# BAD -- XPath: breaks when DOM structure changes
-page.click("//div[@class='form']/button[2]")
-
-# GOOD -- role selector: stable, accessible, user-centric
-page.get_by_role("button", name="Place order").click()
-```
-
 - Role/label/text selectors reflect the real user perspective
 - CSS/XPath selectors couple tests to implementation (DOM structure, class names)
 - `data-testid` is stable but does not verify accessibility -- use as last resort
@@ -212,65 +201,21 @@ e2e/
 
 ## Authentication in E2E Tests
 
-### The "One Login Test" Rule
-
-Write exactly ONE test that verifies the UI login flow:
+**One Login Test rule**: write exactly ONE test that verifies the UI login flow (fill credentials via `LoginPage`, submit, assert the dashboard shows the user as logged in). ALL other tests use programmatic authentication and never go through the login UI.
 
 ```
-test_user_can_login_via_ui():
-    login_page = LoginPage(page)
-    login_page.enter_email("user@test.com")
-    login_page.enter_password("password123")
-    dashboard = login_page.submit()
-
-    assert dashboard.welcome_message == "Welcome back!"
-    assert dashboard.is_logged_in()
-```
-
-**ALL other tests**: use programmatic authentication. Never go through the login UI.
-
-### Programmatic login
-
-```
-# Pattern: API login -> inject token -> skip UI
+# Programmatic login: API login -> inject token -> skip UI
 setup():
-    response = api.post("/auth/login", {email, password})
-    token = response.token
-    storage.set("auth_token", token)
-    # OR: set cookie directly
-    page.context.add_cookies([{name: "session", value: token}])
-```
+    token = api.post("/auth/login", {email, password}).token
+    storage.set("auth_token", token)           # OR: page.context.add_cookies([{name: "session", value: token}])
 
-### Storage state reuse
+# Storage state reuse: save once in global setup, load in each test
+save_storage_state(login_via_api(user), "auth-state.json")
+test_setup(): load_storage_state("auth-state.json")
 
-```
-# Save auth state once (in global setup)
-authenticated_state = login_via_api(user)
-save_storage_state("auth-state.json")
-
-# Reuse in all tests (in test setup)
-test_setup():
-    load_storage_state("auth-state.json")
-    # User is already logged in -- no login needed
-```
-
-### Multi-role fixtures
-
-```
-# Create fixtures per role
-admin_state = login_via_api(admin_user)
-regular_state = login_via_api(regular_user)
-guest_state = empty_state()
-
-# Use in tests
-test_admin_sees_user_management(use_auth=admin_state):
-    dashboard = DashboardPage(page)
-    assert dashboard.has_menu_item("User Management")
-
-test_user_cannot_see_user_management(use_auth=regular_state):
-    dashboard = DashboardPage(page)
-    assert not dashboard.has_menu_item("User Management")
+# Multi-role fixtures: one state per role (admin, regular, guest = empty state)
+test_admin_sees_user_management(use_auth=admin_state): ...
+test_user_cannot_see_user_management(use_auth=regular_state): ...
 ```
 
 Programmatic auth: <100ms vs 2-5s per test for UI login. Storage state reuse: ~0ms. Always prefer programmatic.
-

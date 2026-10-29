@@ -59,18 +59,7 @@ intercept("POST", "/api/orders", {status: 200, body: {id: "1"}})  # Defeats the 
 MSW intercepts at the network level, transparent to the application code. Useful when the same mocking strategy is needed across unit, integration, and E2E tests.
 
 ```
-# Define handlers for external services
-handlers = [
-    rest.post("https://api.stripe.com/*", (req, res, ctx) => {
-        return res(ctx.json({id: "ch_test", status: "succeeded"}))
-    }),
-    rest.get("https://api.maps.com/geocode", (req, res, ctx) => {
-        return res(ctx.json({results: [mock_address]}))
-    }),
-    rest.post("https://api.sendgrid.com/send", (req, res, ctx) => {
-        return res(ctx.status(202))
-    })
-]
+handlers = [rest.post("https://api.stripe.com/*", -> json {id: "ch_test", status: "succeeded"}), ...]
 ```
 
 Benefits:
@@ -143,31 +132,12 @@ Rules:
 Test how the application handles failures from external services. Users will encounter these errors -- the UI must handle them gracefully.
 
 ```
-# Simulate server error (500)
-intercept("POST", "https://api.stripe.com/charges", {status: 500})
+intercept("POST", "https://api.stripe.com/charges", {status: 500})                         # server error
+intercept("POST", "https://api.stripe.com/charges", {delay: 30000})                        # timeout
+intercept("POST", "https://api.stripe.com/charges", {error: "net::ERR_CONNECTION_REFUSED"}) # network error
+intercept("POST", "https://api.stripe.com/charges", {delay: 5000, status: 200, body: {...}}) # slow success
 checkout.place_order()
-assert checkout.error_message == "Payment failed. Please try again."
-
-# Simulate timeout
-intercept("POST", "https://api.stripe.com/charges", {delay: 30000})
-checkout.place_order()
-assert checkout.error_message == "Request timed out"
-
-# Simulate network error (connection refused)
-intercept("POST", "https://api.stripe.com/charges", {error: "net::ERR_CONNECTION_REFUSED"})
-checkout.place_order()
-assert checkout.error_message == "Unable to connect. Check your internet."
-
-# Simulate slow but successful response (test loading state)
-intercept("POST", "https://api.stripe.com/charges", {
-    delay: 5000,
-    status: 200,
-    body: {id: "ch_test", status: "succeeded"}
-})
-checkout.place_order()
-assert checkout.loading_spinner.is_visible()  # Shows loading during delay
-wait_for_response("https://api.stripe.com/charges")
-assert confirmation.is_visible()  # Eventually succeeds
+assert checkout.error_message == "Payment failed. Please try again."   # per scenario; slow success: spinner visible, then confirmation
 ```
 
 Test matrix for external dependencies:
@@ -187,20 +157,8 @@ Test matrix for external dependencies:
 GraphQL sends all requests to the same URL. Intercept by operation name, not by endpoint.
 
 ```
-# Mock a specific mutation
-intercept_graphql("CreateOrder", {
-    data: {createOrder: {id: "order_123", status: "created"}}
-})
-
-# Mock a specific query
-intercept_graphql("GetUserProfile", {
-    data: {user: {id: "1", name: "Test User", email: "test@test.com"}}
-})
-
-# Mock an error response
-intercept_graphql("CreateOrder", {
-    errors: [{message: "Insufficient inventory", code: "OUT_OF_STOCK"}]
-})
+intercept_graphql("CreateOrder", {data: {createOrder: {id: "order_123", status: "created"}}})
+intercept_graphql("CreateOrder", {errors: [{message: "Insufficient inventory", code: "OUT_OF_STOCK"}]})
 ```
 
 - Match on `operationName` in the request body
@@ -214,20 +172,9 @@ intercept_graphql("CreateOrder", {
 WebSocket connections require separate handling from HTTP requests.
 
 ```
-# Test real-time notification
 mock_ws = create_mock_websocket("/ws/notifications")
-login_as(user)
-navigate("/dashboard")
-
-# Simulate incoming message
-mock_ws.send({type: "notification", text: "New order received"})
-assert page.text("New order received")
-
-# Test reconnection
-mock_ws.close()
-wait_for_text("Connection lost")
-mock_ws.reopen()
-wait_for_text_gone("Connection lost")
+mock_ws.send({type: "notification", text: "New order received"}); assert page.text("New order received")
+mock_ws.close(); wait_for_text("Connection lost"); mock_ws.reopen(); wait_for_text_gone("Connection lost")
 ```
 
 Test scenarios for WebSocket:
