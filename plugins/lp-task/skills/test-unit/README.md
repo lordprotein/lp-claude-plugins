@@ -33,9 +33,9 @@ The skill analyzes your code changes (or specified files) and generates comprehe
 
 1. Determines test scope — asks which test types to generate (business logic, UI, utilities)
 2. Classifies code by testability (domain logic, UI components, utilities, trivial, controllers)
-3. Identifies test scenarios (happy paths, boundaries, errors, invariants)
+3. Identifies test scenarios (happy paths, boundaries, errors, invariants) and shows them as a plan to confirm
 4. Generates tests following AAA pattern with proper naming
-5. Self-checks against antipatterns before output
+5. Self-checks against antipatterns, then writes the files and runs them after you confirm the scenarios plan
 
 ### Mode 2: Review Tests
 
@@ -45,7 +45,7 @@ The skill reviews existing tests for quality issues:
 2. Detects antipatterns (The Liar, The Mockery, Fragile Tests, etc.)
 3. Assesses business logic coverage gaps
 4. Reports findings by severity (P0-P3)
-5. Asks for confirmation before implementing fixes
+5. Asks what to fix (native select) before implementing fixes
 
 ## Workflow
 
@@ -53,17 +53,19 @@ The skill reviews existing tests for quality issues:
 1. **Scope** — Determine test types: business logic, UI components, utilities/hooks
 2. **Preflight** — Analyze code, detect language/framework, find conventions
 3. **Classify** — Extended matrix (domain model / UI component / utility / trivial / controller / overcomplicated)
-4. **Scenarios** — Business rules, boundaries, error paths, invariants, UI states, a11y
+4. **Scenarios** — Business rules, boundaries, error paths, invariants, UI states, a11y; plan confirmed via select (write / show code / change scenarios / extract builders)
 5. **Generate** — AAA pattern, proper doubles, meaningful names
 6. **Self-check** — Verify against antipatterns checklist
-7. **Output** — Tests with classification and coverage notes
+7. **Output** — Files written and run (or code shown on request)
 
 ### Review Mode
 1. **Preflight** — Collect test files, read production code
 2. **Evaluate** — Check against review checklist
 3. **Severity** — Assign P0-P3 to each finding
 4. **Output** — Findings with suggested fixes
-5. **Confirm** — Ask user before implementing changes
+5. **Confirm** — Select what to fix: all / P0–P1 / by numbers / nothing
+
+The "Fix existing tests" path of Review handles tests broken by code changes (used by `/lp-task:do`).
 
 ## Severity Levels
 
@@ -78,14 +80,17 @@ The skill reviews existing tests for quality issues:
 
 ```
 test-unit/
-├── SKILL.md                           # Main skill definition
+├── SKILL.md                           # Entry point: modes, severity, Detection Table
 ├── agents/
 │   └── agent.yaml                     # Agent interface config
 └── references/
+    ├── generate-workflow.md           # Generate mode steps and output
+    ├── review-workflow.md             # Review mode steps, output, fixing existing tests
     ├── testing-principles.md          # Four pillars, FIRST, pyramid, classification
     ├── test-design-patterns.md        # AAA, builders, parameterization, naming
     ├── test-doubles-guide.md          # Dummy/Stub/Spy/Mock/Fake guide
-    ├── business-logic-testing.md      # Decision tables, boundaries, invariants
+    ├── business-logic-testing.md      # Decision tables, boundaries, invariants, error paths
+    ├── state-and-concurrency-testing.md # State machines, concurrency, idempotency
     ├── ui-component-testing.md        # Unit testing UI components, query priority, UI states, a11y, snapshots
     ├── utility-and-hooks-testing.md   # Pure functions, parameterized tests, hooks, boundaries
     ├── antipatterns-checklist.md       # 12 antipatterns with detection and fixes

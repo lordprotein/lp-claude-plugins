@@ -74,7 +74,7 @@ Remember the answers and write the state (projects, base, branch).
    - `git -C <path> checkout -b <branch> origin/<base>` (for «Пересоздать» — `checkout -B`, for «Переиспользовать» — `checkout <branch>`), verify `branch --show-current`.
 
    Update the state.
-6. Implement the plan. Unit tests: do not write new ones and do not put them in the plan, the user runs `/lp-task:test-unit` for that when needed. Existing unit tests that the changes break or make obsolete may be fixed or removed, but only through the instructions from `${CLAUDE_PLUGIN_ROOT}/skills/test-unit/SKILL.md`; once you use it, follow it fully to the end, so every unit test change goes through it.
+6. Implement the plan. Unit tests: do not write new ones and do not put them in the plan, the user runs `/lp-task:test-unit` for that when needed. Existing unit tests that the changes break or make obsolete may be fixed or removed, but only through the instructions from `${CLAUDE_PLUGIN_ROOT}/skills/test-unit/SKILL.md` (its "Fix existing tests" path); once you use it, follow it fully to the end, so every unit test change goes through it.
 7. Check: in every project with a non-empty `lint` run `git -C <path> diff --name-only --diff-filter=d | (cd <path> && xargs <lint>)` (do not pass the file list through a variable — zsh will not split it into arguments). Mark warnings that existed before the changes as pre-existing.
 
 ## Step 7. Waiting
