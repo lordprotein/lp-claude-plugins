@@ -7,6 +7,7 @@
 - **SSRF**: User-controlled URLs reaching internal services without allowlist validation
 - **Path traversal**: User input in file paths without sanitization (`../` attacks)
 - **Prototype pollution**: Unsafe object merging in JavaScript (`Object.assign`, spread with user input)
+- **Unsafe deserialization**: Untrusted data passed to deserializers that can instantiate objects or run code
 
 ## AuthN/AuthZ
 
@@ -43,13 +44,14 @@
 - Overly permissive CORS (`Access-Control-Allow-Origin: *` with credentials)
 - Missing security headers (CSP, X-Frame-Options, X-Content-Type-Options)
 - Exposed internal headers or stack traces
+- Insecure defaults (debug mode, permissive settings, security features off unless configured)
 
 ## Runtime Risks
 
 - Unbounded loops, recursive calls, or large in-memory buffers
 - Missing timeouts, retries, or rate limiting on external calls
 - Blocking operations on request path (sync I/O in async context)
-- Resource exhaustion (file handles, connections, memory)
+- Resource exhaustion (file handles, connections, memory), CPU/memory hotspots
 - ReDoS (Regular Expression Denial of Service)
 
 ## Cryptography
@@ -60,8 +62,6 @@
 - Insufficient key length
 
 ## Race Conditions
-
-Race conditions are subtle bugs that cause intermittent failures and security vulnerabilities. Pay special attention to:
 
 ### Shared State Access
 - Multiple threads/goroutines/async tasks accessing shared variables without synchronization
@@ -84,11 +84,7 @@ Race conditions are subtle bugs that cause intermittent failures and security vu
 - Unique constraint violations in concurrent inserts
 
 ### Distributed Systems
-- Missing distributed locks for shared resources
-- Leader election race conditions
-- Cache invalidation races (stale reads after writes)
-- Event ordering dependencies without proper sequencing
-- Split-brain scenarios in cluster operations
+- Missing distributed locks, leader election or split-brain races, cache invalidation races (stale reads after writes), event ordering without sequencing
 
 ### Common Patterns to Flag
 ```

@@ -1,7 +1,5 @@
 # SOLID in React — Smell Prompts & Patterns
 
-React does not use classical OOP, but SOLID principles map directly to components, hooks, and module boundaries. This checklist helps catch violations specific to React codebases.
-
 ---
 
 ## SRP (Single Responsibility)
@@ -103,16 +101,6 @@ const formatStatus = STATUS_FORMATTERS[type] ?? defaultFormatter
 - A component accepts the same props as another but silently ignores some of them
 - Wrapper components that break the contract of the wrapped component
 - Components that accept `children` but conditionally don't render them
-
-```tsx
-// Bad: Wrapper sometimes ignores children
-const Wrapper = ({ children }) => {
-  if (href) {
-    return <Link to={href}>{children}</Link>
-  }
-  return <div>{children}</div> // OK, but creating Wrapper via useCallback is the real issue
-}
-```
 
 ### Unsafe type narrowing
 

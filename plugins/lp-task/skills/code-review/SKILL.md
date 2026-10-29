@@ -15,7 +15,7 @@ Perform a structured code review with focus on SOLID, architecture, removal cand
 - **Targeted review mode** (with argument): Reviews specific code — a file path, folder, feature name, function, or keyword. The argument is interpreted flexibly: it can be a path (`src/auth/`), an entity name (`PaymentService`), or a description (`логика корзины`).
 - **MR mode** (argument is a merge request link, or `mr`): Reviews the diff of a GitLab merge request and can publish the findings as MR comments (step 9).
 
-If the project uses `/lp-task` config (see `${CLAUDE_PLUGIN_ROOT}/shared.md`), read its `review` section: `review.postToMr` (`ask` | `never`), `review.minSeverity`, `review.gitlab.mcpServer`. Without a config use the defaults from `${CLAUDE_PLUGIN_ROOT}/config.default.json`.
+Config: the first `.claude/lp-task.json` found from the current directory upward (else `~/.claude/lp-task.json`), deep-merged over `${CLAUDE_PLUGIN_ROOT}/config.default.json` (objects key by key, arrays and scalars replace). Without a config use the defaults. Used keys: `stateDir` (task state is `<stateDir>/<key>.json`, `~` expands to home), `review.postToMr` (`ask` default: offer to publish findings to a GitLab MR; `never`: do not offer), `review.minSeverity` (`critical` | `high` | `medium` default | `low`: lowest severity offered for publishing), `review.gitlab.mcpServer` (GitLab MCP server name, default `gitlab`; `glab` is the fallback).
 
 ## Severity Levels
 
@@ -66,7 +66,7 @@ If no argument is provided → proceed to step 1 (default git diff review).
 ### 2) SOLID + architecture smells
 
 - Load `references/solid-checklist.md` for general SOLID prompts.
-- **If the project uses React**: also load `references/solid-react-checklist.md` for React-specific patterns (god-hooks, wide hook interfaces, component anti-patterns).
+- **If the review scope contains `.tsx`/`.jsx` files or React hooks**: also load `references/solid-react-checklist.md` for React-specific patterns (god-hooks, wide hook interfaces, component anti-patterns).
 
 **MANDATORY procedure** — do NOT skip this, do NOT merge SOLID findings into general findings:
 
@@ -93,47 +93,27 @@ If no argument is provided → proceed to step 1 (default git diff review).
   - [ ] Verified no external consumers (APIs, SDKs, docs)
   - [ ] Feature flag telemetry reviewed (if applicable)
   - [ ] Tests updated/removed
-  - [ ] Documentation updated
-  - [ ] Team notified (if shared code)
 
 ### 4) Security and reliability scan
 
-- Load `references/security-checklist.md` for coverage.
-- Check for:
-  - XSS, injection (SQL/NoSQL/command), SSRF, path traversal
-  - AuthZ/AuthN gaps, missing tenancy checks
-  - Secret leakage or API keys in logs/env/files
-  - Rate limits, unbounded loops, CPU/memory hotspots
-  - Unsafe deserialization, weak crypto, insecure defaults
-  - **Race conditions**: concurrent access, check-then-act, TOCTOU, missing locks
-  - **New dependencies**: If new packages were added, check justification (could stdlib solve it?), maintenance status, and bundle size impact. Flag unjustified or unmaintained additions as 🟡 Medium.
+- Load `references/security-checklist.md` and check every section of it.
+- **New dependencies**: If new packages were added, check justification (could stdlib solve it?), maintenance status, and bundle size impact. Flag unjustified or unmaintained additions as 🟡 Medium.
 - Call out both **exploitability** and **impact**.
 
 ### 5) Code quality scan
 
-- Load `references/code-quality-checklist.md` for coverage.
-- Check for:
-  - **Error handling**: swallowed exceptions, overly broad catch, missing error handling, async errors
-  - **Boundary conditions**: null/undefined handling, empty collections, numeric boundaries, off-by-one
-  - **Test coverage gap**: If changed code lacks corresponding test updates, flag as 🟡 Medium. Note which behaviors are untested. Do NOT write tests — only flag the gap.
-  - **Breaking changes**: Check for renamed/removed public APIs, changed function signatures, altered response shapes, removed exports. If the change is in a shared library or API layer, flag breaking changes as 🟠 High with migration guidance.
+- Load `references/code-quality-checklist.md` and check every section of it (error handling, boundary conditions).
+- **Test coverage gap**: If changed code lacks corresponding test updates, flag as 🟡 Medium. Note which behaviors are untested. Do NOT write tests — only flag the gap.
+- **Breaking changes**: Check for renamed/removed public APIs, changed function signatures, altered response shapes, removed exports. If the change is in a shared library or API layer, flag breaking changes as 🟠 High with migration guidance.
 - Flag issues that may cause silent failures or production incidents.
 
 ### 6) Performance scan
 
-- Load `references/performance-checklist.md` for coverage.
-- Check for:
-  - **Algorithmic complexity**: nested loops O(n²), linear search instead of hash, sort inside loop, recursion without memoization
-  - **Memory leaks**: unsubscribed listeners, uncleaned timers, closures capturing large objects, unbounded collections, missing resource cleanup
-  - **CPU hot paths**: expensive ops in loops, blocking sync I/O, redundant computation
-  - **Database & I/O**: N+1 queries, over-fetching, missing pagination, missing indexes
-  - **Caching**: missing cache, no TTL, no invalidation, key collisions
+- Load `references/performance-checklist.md` and check every section of it.
 - For each finding, estimate impact: note input size sensitivity and expected degradation pattern.
 - All performance findings go into the `### ⚡ Performance` category within the `## Findings` section.
 
 ### 7) Output format
-
-Load `references/finding-format.md` for the per-finding template and formatting rules.
 
 Structure your review as follows:
 
@@ -150,16 +130,16 @@ Structure your review as follows:
 **Units checked**: `useMyHook`, `MyComponent`, `utilFunction`, ...
 
 ### 🛡 Security & Reliability
-(findings formatted per finding-format.md template)
+(findings formatted per the finding template below)
 
 ### 🏗 Architecture & SOLID
-(findings formatted per finding-format.md template)
+(findings formatted per the finding template below)
 
 ### ⚡ Performance
-(findings formatted per finding-format.md template)
+(findings formatted per the finding template below)
 
 ### 🧹 Code Quality
-(findings formatted per finding-format.md template)
+(findings formatted per the finding template below)
 
 ### 🗑 Removal Candidates
 (if applicable)
@@ -169,6 +149,43 @@ Structure your review as follows:
 ## Additional Suggestions
 (optional improvements, not blocking)
 ````
+
+**Finding template** (every finding, every category):
+
+````
+N. Brief title
+
+**Status:**
+🔴 Critical
+
+**Files:**
+- `file.ts:42`
+- `other.ts:15`
+
+**Description:**
+Explanation text.
+```lang
+problematicCode()
+```
+
+**Fix:**
+Suggested fix text.
+```lang
+betterCode()
+```
+
+---
+
+M. Next finding title
+...
+````
+
+- Only the finding title is numbered (`1.`, `2.`, ...); numbering restarts at 1 in each category. Labels (**Status:**, **Files:**, **Description:**, **Fix:**) are plain bold text: never numbered, never indented.
+- Each label is on its own line; its value starts on the next line.
+- Between findings: empty line, `---`, empty line. No `---` after the last finding in a category.
+- Within a category sort by severity: 🔴, 🟠, 🟡, 🟢. Empty categories are not rendered.
+- Description MUST include a code block with the problematic fragment; Fix MUST include a code block with the suggested change when applicable.
+- The severity summary appears only in Next Steps (one line).
 
 **Clean review**: If no issues found, explicitly state:
 - What was checked
