@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-**unit-tests** — AI skill (Claude Code skill) for writing and reviewing unit tests. Language-agnostic, exclusively unit-level (one unit in isolation, dependencies mocked/stubbed/faked). Based on practices from Beck, Fowler, Khorikov, and Google.
+**test-unit** — AI skill (Claude Code skill) for writing and reviewing unit tests. Language-agnostic, exclusively unit-level (one unit in isolation, dependencies mocked/stubbed/faked). Based on practices from Beck, Fowler, Khorikov, and Google.
 
 Two modes:
 - **Generate** (default) — analyze code, classify it, produce tests
@@ -20,7 +20,7 @@ references/           ← Knowledge base loaded on-demand during skill execution
 
 ### Skill Execution Flow
 
-The skill is invoked via `/lp-task:unit-tests`. SKILL.md defines the entire workflow:
+The skill is invoked via `/lp-task:test-unit`. SKILL.md defines the entire workflow:
 
 **Generate mode** (7 steps): Determine scope → Preflight → Classify code (Khorikov matrix) → Determine scenarios → Generate tests → Self-check antipatterns → Output
 

@@ -1,6 +1,6 @@
 ---
 description: Commit the task changes in all of its projects (first commit "{key}: {title}" or a fix "{key}: fix (...)"), then offer to push
-argument-hint: "[--review] [short fix description]"
+argument-hint: "[short fix description]"
 ---
 
 # /lp-task:commit
@@ -8,8 +8,6 @@ argument-hint: "[--review] [short fix description]"
 Arguments: `$ARGUMENTS`
 
 First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
-
-The flag `--review` in the arguments (remove it from the text before using the rest as the fix description) is an explicit «Да» to the review question in the `## Review` section.
 
 A **new** commit is always created. No amend and no force push.
 
@@ -29,15 +27,6 @@ If there are no changes in any project — say so and stop.
 ## Check
 
 In every project with changes and a non-empty `lint`: `git -C <path> diff --name-only --diff-filter=d | (cd <path> && xargs <lint>)` (for new untracked files add them to the list). Errors — fix and retry; mark warnings that existed before the changes as pre-existing.
-
-## Review
-
-The code review never starts by itself.
-
-1. If `review.beforeCommit` is `never` and there is no `--review` flag — skip this section.
-2. Without `--review`, ask (AskUserQuestion), header «Ревью»: «Запустить code-review перед коммитом?» — exactly 2 options: «Нет» / «Да». «Нет» — skip this section and go on to the message, nothing else changes.
-3. «Да» (or `--review`): for every project with changes run the `code-review` skill (`${CLAUDE_PLUGIN_ROOT}/skills/code-review/SKILL.md`) on its uncommitted diff: only 🔴🟠🟡 findings, compact output, no «Next steps» question and no MR publishing (there is no MR yet). Run it through a subagent per project (in parallel when there are several), so the main context stays small.
-4. Show the findings per project in one list. If there are 🔴/🟠 — ask (AskUserQuestion), header «Ревью»: «Найдены критичные замечания. Что делать?» — «Исправить» / «Закоммитить как есть» / «Отмена». «Исправить» — fix them following `do.md` step 6 (lint included), show the updated diff and go on with the commit flow (the review is not repeated unless the user asks). «Отмена» — commit nothing and stop. If there are only 🟡/🟢 or nothing — show the list and go on.
 
 ## Message
 

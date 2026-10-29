@@ -24,7 +24,7 @@ Part of the `lp` plugin — see the root README of this repository.
 After installation, run:
 
 ```
-/lp-task:unit-tests
+/lp-task:test-unit
 ```
 
 ### Mode 1: Generate Tests
@@ -77,7 +77,7 @@ The skill reviews existing tests for quality issues:
 ## Structure
 
 ```
-unit-tests/
+test-unit/
 ├── SKILL.md                           # Main skill definition
 ├── agents/
 │   └── agent.yaml                     # Agent interface config

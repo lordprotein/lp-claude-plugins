@@ -3,7 +3,7 @@ description: Full browser check of the task via Chrome MCP — acceptance criter
 argument-hint: "[task key]"
 ---
 
-# /lp-task:browser-test
+# /lp-task:test-browser
 
 Arguments: `$ARGUMENTS`
 

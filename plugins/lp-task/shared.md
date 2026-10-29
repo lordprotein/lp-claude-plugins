@@ -27,7 +27,6 @@ Take all templates, paths and the project list only from the merged config.
 - `mrMessage.link` — template of one MR link line in `{links}`.
 - `mrMessage.clipboard` — copy the MR message to the clipboard.
 - `stateDir` — where the task state is stored: `<stateDir>/<key>.json`.
-- `review.beforeCommit` — `ask` (default): `/lp-task:commit` asks whether to run the code review first; `never`: do not ask. There is no automatic mode, the review never runs without the user's answer «Да» (or the `--review` argument).
 - `review.postToMr` — `ask` (default): after a review of a GitLab MR offer to publish the findings as MR comments; `never`: do not offer.
 - `review.minSeverity` — lowest severity offered for publishing: `critical`, `high`, `medium` (default) or `low`.
 - `review.gitlab.mcpServer` — name of the GitLab MCP server used to read the MR and post comments (default `gitlab`); `glab` is the fallback.

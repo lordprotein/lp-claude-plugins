@@ -1,5 +1,5 @@
 ---
-description: Tracker task → project selection → plan → branches → implementation (commit via /lp-task:commit, push via /lp-task:push, browser check via /lp-task:browser-test)
+description: Tracker task → project selection → plan → branches → implementation (commit via /lp-task:commit, push via /lp-task:push, browser check via /lp-task:test-browser)
 argument-hint: "[task link | key | status]"
 ---
 
@@ -81,13 +81,13 @@ Remember the answers and write the state (projects, base, branch).
 
 Do not commit. Show `git diff --stat` for every project, then ask (AskUserQuestion), header «Браузер»: «Проверить задачу в браузере через Chrome MCP?» — «Да» / «Нет».
 
-- «Да» → follow the instructions from `${CLAUDE_PLUGIN_ROOT}/commands/browser-test.md`, then say the final message below.
+- «Да» → follow the instructions from `${CLAUDE_PLUGIN_ROOT}/commands/test-browser.md`, then say the final message below.
 - «Нет» → say the final message below.
 
-Final message: «Изменения готовы. Для коммита — `/lp-task:commit` (или напишите „закоммить“). Проверка в браузере — `/lp-task:browser-test`» — and stop.
+Final message: «Изменения готовы. Для коммита — `/lp-task:commit` (или напишите „закоммить“). Проверка в браузере — `/lp-task:test-browser`» — and stop.
 
 If the user asks «закоммить» in this session — follow the instructions from `${CLAUDE_PLUGIN_ROOT}/commands/commit.md`. Follow-up fixes (before or after push) are committed the same way: always a new `git.fixCommit` commit, no amend and no force push.
 
 If the user writes «запушь» in this session — follow the instructions from `${CLAUDE_PLUGIN_ROOT}/commands/push.md`.
 
-If the user asks to check in the browser in this session — follow the instructions from `${CLAUDE_PLUGIN_ROOT}/commands/browser-test.md`.
+If the user asks to check in the browser in this session — follow the instructions from `${CLAUDE_PLUGIN_ROOT}/commands/test-browser.md`.
