@@ -34,7 +34,7 @@ To bootstrap a new machine automatically, add to the user `settings.json`:
 
 ## Updating
 
-Plugins have no `version` field, so every pushed commit is a new version. Updates arrive via auto-update or `/plugin marketplace update lp-tools`.
+Each plugin has a semver `version` in its `plugin.json`, shown on install and in `/plugin`. Installed copies update only when the version changes. Updates arrive via auto-update or `/plugin marketplace update lp-tools`.
 
 ## Local development
 

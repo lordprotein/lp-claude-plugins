@@ -14,6 +14,6 @@ Claude Code marketplace `lp-tools`. No build, test or lint — only markdown, JS
 - New skill → new folder in `plugins/lp/skills/`, add it to the table in `README.md` and to the `lp` description in `plugin.json`
 - New plugin → new folder in `plugins/` with `.claude-plugin/plugin.json` and an entry in `marketplace.json`
 - Keep content portable: examples, configs and instructions must work in any project — use neutral placeholders (e.g. `acme`) instead of real project names, paths, domains, ticket keys or other identifying details
-- Do not add `version` to `plugin.json` — the commit SHA is used as the version
+- Every commit that changes a plugin bumps `version` in its `plugin.json` (semver: patch for fixes and wording, minor for new commands, skills or behavior, major for renames and removals). Without a bump installed copies do not update
 - Skill-specific rules live in the skill's own `CLAUDE.md`
 - Run `claude plugin validate .` before pushing
