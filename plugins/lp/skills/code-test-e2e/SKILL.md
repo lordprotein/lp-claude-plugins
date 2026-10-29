@@ -177,25 +177,15 @@ Required: load `references/e2e-antipatterns-checklist.md` and run every check be
 ```markdown
 ## E2E Test Generation Summary
 
-**Scope**: X features/flows analyzed
-**Classification**: Critical journeys: A, Important flows: B, Skipped (nice-to-have): C
-**Risk tags applied**: [list if any]
-**Tests generated**: Z test cases across N flows
-
----
+**Scope**: X flows analyzed. **Tests generated**: Z across N flows
 
 ## Flow Classification
 
-> This section is **required**. You MUST classify every analyzed flow before generating tests.
+> Required: every analyzed flow is listed here. Risk tags appear only in this table.
 
 | Flow | Criticality x Complexity | Risk Tags | Strategy |
 |------|--------------------------|-----------|----------|
-| `Checkout flow` | Critical x Medium | PAYMENT, DATA_INTEGRITY | Full E2E — happy + sad paths |
-| `User registration` | Critical x Low | AUTH, PII | Core CRUD tests |
-| `Profile settings` | Important x Low | — | Happy path only |
-| `Theme toggle` | Nice-to-have x Low | — | Skip E2E |
-
----
+| `Checkout flow` | Critical x Medium | PAYMENT, DATA_INTEGRITY | Full E2E: happy + sad paths |
 
 ## Page Objects
 
@@ -203,32 +193,17 @@ Required: load `references/e2e-antipatterns-checklist.md` and run every check be
 
 [Page Object code with high-level methods]
 
----
-
 ## Generated Tests
 
 ### [flow_name.e2e.ext]
 
 [Test code with comments explaining the scenario for non-obvious cases]
 
----
+## Coverage Gaps
 
-## Coverage Notes
+(optional, omit if none) Flows left uncovered and why: skipped nice-to-have, better served by monitoring, pushed to unit/integration.
 
-- **Tested (critical journeys)**: [List of critical flows covered]
-- **Tested (important flows)**: [List of important flows — happy path]
-- **Skipped (nice-to-have)**: [List with rationale]
-- **Needs monitoring instead**: [High-complexity flows better served by monitoring]
-- **Risk tags applied**: [Which risk tags overrode the matrix]
-
----
-
-## Next Steps
-
-1. **Run tests** — Shall I run the generated E2E tests?
-2. **Add Page Objects** — Shall I extract more Page Objects for reuse?
-3. **Add accessibility checks** — Shall I add axe-core checks to the flows?
-4. **Add visual regression** — Shall I add screenshot comparison for key states?
+Next: run the tests, extract more Page Objects, add axe-core or visual regression checks?
 ```
 
 **Important**: Do NOT write test files to disk until user explicitly confirms. Present the generated tests in the output first, then ask how to proceed.
@@ -273,18 +248,13 @@ Assign severity to each finding per the Severity Levels table above (per-antipat
 ```markdown
 ## E2E Test Review Summary
 
-**Files reviewed**: X test files, Y test cases
-**Overall assessment**: [APPROVE / REQUEST_CHANGES / COMMENT]
-**Flakiness risk**: [Low / Medium / High]
-**Flow coverage**: [Good / Adequate / Insufficient]
-**Flows checked**: [list of checked flows, e.g., checkout, registration, profile]
-
----
+**Files reviewed**: X test files, Y test cases. **Flows checked**: [checkout, registration, ...]
+**Overall assessment**: [APPROVE / REQUEST_CHANGES / COMMENT]. **Flakiness risk**: [Low / Medium / High]. **Flow coverage**: [Good / Adequate / Insufficient]
 
 ## Findings
 
 ### 🔴 Critical
-(none or list — use the finding format below)
+(none or list)
 
 ### 🟠 High
 
@@ -292,31 +262,15 @@ Assign severity to each finding per the Severity Levels table above (per-antipat
 
 ### 🟢 Low
 
-> **Finding format** (use for each issue):
+> **Finding format** (one per issue, severity given by its section):
 >
-> N. **Brief title**
->
->    **Status:** 🟠 High
->    **Files:** `test_file.ts:42`
->
->    **Description:**
->    [problematic code or description]
->
->    **Fix:**
->    [suggested fix with code example]
->
-> For file-specific remarks, use inline comments:
-> `::code-comment{file="path/to/file.ts" line="42" severity="high"}`
-> Description and fix.
-> `::`
-
----
+> N. **Brief title**: `test_file.ts:42`
+>    Problem: [description or problematic code]
+>    Fix: [suggested fix, code example when useful]
 
 ## Flakiness Risk Assessment
 
-- [Sources of non-determinism identified]
-- [Wait strategy issues]
-- [Data isolation concerns]
+- [Sources of non-determinism, wait strategy issues, data isolation concerns]
 
 ## Coverage Gaps
 
@@ -324,22 +278,9 @@ Assign severity to each finding per the Severity Levels table above (per-antipat
 
 ## Positive Observations
 
-- [What's done well — reinforce good practices]
+(optional, max 2 bullets) [What's done well]
 
----
-
-## Next Steps
-
-I found X issues (🔴 Critical: _, 🟠 High: _, 🟡 Medium: _, 🟢 Low: _).
-
-**How would you like to proceed?**
-
-1. **Fix all** — I'll implement all suggested fixes
-2. **Fix Critical/High only** — Address 🔴 and 🟠 issues
-3. **Fix specific items** — Tell me which issues to fix
-4. **No changes** — Review complete, no implementation needed
-
-Please choose an option or provide specific instructions.
+Found X issues (🔴 _, 🟠 _, 🟡 _, 🟢 _). Fix: all / only 🔴🟠 / numbers, comma-separated / nothing?
 ```
 
 **Important**: Do NOT implement any changes until user explicitly confirms. This is a review-first workflow.

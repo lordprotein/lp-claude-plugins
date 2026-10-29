@@ -55,7 +55,7 @@ The skill reviews existing E2E tests for quality issues:
 4. **Scenarios** — Happy paths, sad paths, state transitions, edge conditions (3-8 per flow)
 5. **Generate** — Page Objects, AAA pattern, programmatic auth, proper waits
 6. **Self-check** — Verify against 12 E2E antipatterns
-7. **Output** — Tests with classification, Page Objects, and coverage notes
+7. **Output** — Tests with classification, Page Objects, and coverage gaps
 
 ### Review Mode
 1. **Preflight** — Collect E2E test files, read Page Objects, production code

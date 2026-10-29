@@ -82,7 +82,7 @@ Required: classify every unit before generating any test.
 | **Controllers / orchestrators** | Integration tests only — don't unit test |
 | **Overcomplicated code** (high complexity + many dependencies) | Recommend refactoring first, then test |
 
-- Report the classification to the user before generating tests.
+- Report the classification only once, as the Code Classification table in the output (step 6).
 - If code is overcomplicated, suggest the Humble Object pattern: push domain logic into objects with no infrastructure dependencies (unit test them), leave a thin orchestrator (integration test only).
 
 ### 3) Determine test scenarios
@@ -172,7 +172,6 @@ Required: run EVERY check below for EACH generated test before output.
 ## Test Generation Summary
 
 **Source**: X files analyzed, Y functions/methods identified
-**Classification**: Domain logic: A, UI components: B, Utilities/hooks: C, Trivial (skipped): D, Controllers (skip for unit test): E
 **Tests generated**: Z test cases
 
 ---
@@ -195,19 +194,13 @@ Required: run EVERY check below for EACH generated test before output.
 
 ---
 
-## Coverage Notes
+## Coverage Notes (optional, omit if none)
 
-- **Tested**: business rules, UI components, utilities/hooks covered
-- **Not tested (trivial)**: skipped trivial code
-- **Out of scope**: controllers (integration), overcomplicated (refactor first)
+- [Gaps and deliberately untested scenarios not visible in the table above; do not repeat the classification]
 
 ---
 
-## Next Steps
-
-1. **Run tests** — Shall I run the generated tests to verify they pass?
-2. **Add more scenarios** — Any edge cases or business rules I missed?
-3. **Create test helpers** — Shall I extract builders/factories for reusable setup?
+Записать тесты в файлы и запустить? Или добавить сценарии / вынести builders?
 ```
 
 **Important**: Do NOT write test files to disk until user explicitly confirms. Present the generated tests in the output first, then ask how to proceed.
@@ -283,24 +276,13 @@ Assign severity to each finding using the severity levels defined above (P0-P3).
 
 - [Business rules / paths not covered by any test]
 
-## Positive Observations
+## Positive Observations (optional, max 2 bullets, only when notable)
 
-- [What's done well — reinforce good practices]
+- [What's done well]
 
 ---
 
-## Next Steps
-
-I found X issues (P0: _, P1: _, P2: _, P3: _).
-
-**How would you like to proceed?**
-
-1. **Fix all** — I'll implement all suggested fixes
-2. **Fix P0/P1 only** — Address critical and high priority issues
-3. **Fix specific items** — Tell me which issues to fix
-4. **No changes** — Review complete, no implementation needed
-
-Please choose an option or provide specific instructions.
+Найдено X (P0: _, P1: _, P2: _, P3: _). Исправить: все / только P0-P1 / номера через запятую / ничего?
 ```
 
 **Important**: Do NOT implement any changes until user explicitly confirms. This is a review-first workflow.

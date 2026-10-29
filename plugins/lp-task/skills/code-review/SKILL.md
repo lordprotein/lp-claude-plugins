@@ -147,10 +147,10 @@ Structure your review as follows:
 ---
 
 ## Additional Suggestions
-(optional improvements, not blocking)
+(only if there are any: optional improvements, not blocking)
 ````
 
-**Finding template** (every finding, every category):
+**Finding template for 🔴 Critical and 🟠 High**:
 
 ````
 N. Brief title
@@ -180,11 +180,20 @@ M. Next finding title
 ...
 ````
 
+**Finding template for 🟡 Medium and 🟢 Low** (compact):
+
+````
+N. 🟡 Medium · `file.ts:42` · Brief title
+Problem in 1-2 lines. **Fix:** suggested fix in one line.
+````
+
+Add a short code snippet to a Medium/Low finding only if the fix is not obvious from the text.
+
 - Only the finding title is numbered (`1.`, `2.`, ...); numbering restarts at 1 in each category. Labels (**Status:**, **Files:**, **Description:**, **Fix:**) are plain bold text: never numbered, never indented.
-- Each label is on its own line; its value starts on the next line.
+- In the Critical/High template each label is on its own line; its value starts on the next line.
 - Between findings: empty line, `---`, empty line. No `---` after the last finding in a category.
 - Within a category sort by severity: 🔴, 🟠, 🟡, 🟢. Empty categories are not rendered.
-- Description MUST include a code block with the problematic fragment; Fix MUST include a code block with the suggested change when applicable.
+- Critical/High: Description MUST include a code block with the problematic fragment; Fix MUST include a code block with the suggested change when applicable.
 - The severity summary appears only in Next Steps (one line).
 
 **Clean review**: If no issues found, explicitly state:
@@ -194,21 +203,13 @@ M. Next finding title
 
 ### 8) Next steps confirmation
 
-After presenting findings, ask user how to proceed:
+After presenting findings, end with the severity summary and one question:
 
 ```markdown
 ---
 
-## Next Steps
-
-I found X issues (🔴 Critical: _, 🟠 High: _, 🟡 Medium: _, 🟢 Low: _).
-
-**How would you like to proceed?**
-
-1. **Fix all** - I'll implement all suggested fixes
-2. **Fix Critical/High only** - Address 🔴 and 🟠 issues
-3. **Fix specific items** - Tell me which issues to fix
-4. **No changes** - Review complete, no implementation needed
+🔴 _ · 🟠 _ · 🟡 _ · 🟢 _
+Исправить: все / только 🔴🟠 / номера через запятую / ничего?
 ```
 
 **Important**: Do NOT implement any changes until user explicitly confirms. This is a review-first workflow.

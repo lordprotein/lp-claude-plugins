@@ -8,5 +8,5 @@ This is NOT a Node.js/TypeScript application. No build, test, or lint commands e
 - Adding/changing checks → edit the corresponding file in `references/`
 - Keep content portable: examples and instructions must work in any project — use neutral placeholders (e.g. `acme`) instead of real project names, paths, domains or other identifying details
 - `agents/agent.yaml` — interface metadata only, rarely changes
-- Output format is strictly defined in SKILL.md section "7) Output format" — preserve the markdown template structure
+- Output format is defined in SKILL.md section "7) Output format" and must stay compact: do not add sections or fields
 - Keep output concise to save tokens
