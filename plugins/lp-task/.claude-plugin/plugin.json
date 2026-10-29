@@ -1,6 +1,6 @@
 {
   "name": "lp-task",
-  "description": "Commands /lp-task:do (tracker task → project selection → branches or worktrees → implementation), /lp-task:browser-test (full browser check via Chrome MCP), /lp-task:commit (commit the task changes in all of its projects, optional review first, then offer to push), /lp-task:push (push + MR/PR), /lp-task:mr-copy (copy the team MR message again) and /lp-task:init (create a project config). Skills: /lp-task:code-review (code review, can publish findings as GitLab MR comments) and /lp-task:unit-tests (write and review unit tests)",
+  "description": "Commands /lp-task:do (tracker task → project selection → plan → branches → implementation), /lp-task:browser-test (full browser check via Chrome MCP), /lp-task:commit (commit the task changes in all of its projects, optional review first, then offer to push), /lp-task:push (push + MR/PR), /lp-task:mr-copy (copy the team MR message again) and /lp-task:init (create a project config). Skills: /lp-task:code-review (code review, can publish findings as GitLab MR comments) and /lp-task:unit-tests (write and review unit tests)",
   "author": {
     "name": "lordprotein"
   }

@@ -26,10 +26,6 @@
     "minSeverity": "medium",
     "gitlab": { "mcpServer": "gitlab" }
   },
-  "worktrees": {
-    "mode": "ask",
-    "dir": "~/.claude/lp-task/worktrees"
-  },
   "projects": [
     {
       "id": "web",

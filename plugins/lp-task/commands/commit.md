@@ -13,8 +13,6 @@ The flag `--review` in the arguments (remove it from the text before using the r
 
 A **new** commit is always created. No amend and no force push.
 
-For a project with `worktree` in the state, all paths below mean that worktree (see shared.md, hard rule 4).
-
 ## Which task
 
 1. The task from the current context.

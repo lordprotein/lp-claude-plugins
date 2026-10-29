@@ -13,7 +13,7 @@
     },
     {
       "name": "lp-task",
-      "description": "Task flow across one or several repositories: tracker task, branches or worktrees, implementation, browser check, code review, unit tests, commits, push and MR/PR",
+      "description": "Task flow across one or several repositories: tracker task, branches, implementation, browser check, code review, unit tests, commits, push and MR/PR",
       "source": "./plugins/lp-task"
     }
   ]

@@ -9,8 +9,6 @@ Arguments: `$ARGUMENTS`
 
 First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
 
-For a project with `worktree` in the state, all paths below mean that worktree (see shared.md, hard rule 4): diffs, the `dev` command and `git grep` are run there, and its dev server must use a free port.
-
 ## Step 1. Task context
 
 1. `{key}` — from the arguments (via `tracker.keyRegex`); otherwise from the task of the current session; otherwise from the current branch of the working directory; otherwise the most recently modified `<stateDir>/*.json`. If it is still unknown — ask.
