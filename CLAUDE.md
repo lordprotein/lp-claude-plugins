@@ -6,7 +6,7 @@ Claude Code marketplace `lp-tools`. No build, test or lint — only markdown, JS
 
 - `.claude-plugin/marketplace.json` — marketplace manifest, lists every plugin in `plugins/`
 - `plugins/lp/skills/<name>/` — skills of the `lp` plugin, invoked as `/lp:<name>`
-- `plugins/lp-task/` — standalone plugin with commands, invoked as `/lp-task:<command>`
+- `plugins/lp-task/` — standalone plugin, invoked as `/lp-task:<name>`: `commands/` (task flow), `skills/` (`code-review`, `unit-tests`), `agents/` (`browser-tester`)
 
 ## Editing guidelines
 

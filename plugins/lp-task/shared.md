@@ -27,6 +27,12 @@ Take all templates, paths and the project list only from the merged config.
 - `mrMessage.link` — template of one MR link line in `{links}`.
 - `mrMessage.clipboard` — copy the MR message to the clipboard.
 - `stateDir` — where the task state is stored: `<stateDir>/<key>.json`.
+- `review.beforeCommit` — `ask` (default): `/lp-task:commit` asks whether to run the code review first; `never`: do not ask. There is no automatic mode, the review never runs without the user's answer «Да» (or the `--review` argument).
+- `review.postToMr` — `ask` (default): after a review of a GitLab MR offer to publish the findings as MR comments; `never`: do not offer.
+- `review.minSeverity` — lowest severity offered for publishing: `critical`, `high`, `medium` (default) or `low`.
+- `review.gitlab.mcpServer` — name of the GitLab MCP server used to read the MR and post comments (default `gitlab`); `glab` is the fallback.
+- `worktrees.mode` — `ask` (default): `/lp-task:do` asks whether to work in a separate git worktree (default answer «Нет»); `never`: do not ask, work in the main checkout; `always`: do not ask, always use worktrees.
+- `worktrees.dir` — where worktrees are created: `<dir>/<key>-<project id>`.
 - `projects[]` — the repositories a task can span, in the order used everywhere (questions, tables, MR message):
   - `id`, `label`, `path` — identifier, display name, repository path;
   - `pm` — package manager (default `npm`);
@@ -44,7 +50,7 @@ Take all templates, paths and the project list only from the merged config.
 1. **Never push without an explicit user command** (`/lp-task:push`, «запушь», «push», or the answer «Да» to the question «Запушить изменения?» in `/lp-task:commit`). All commits are made only via `/lp-task:commit`; fixes — only as new commits, no amend.
 2. **Never mention Claude / Claude Code** in commits and MRs: no `Co-Authored-By`, no «Generated with», no AI attribution of any kind. The commit message is only the line built from the template.
 3. **Never run `git stash pop` / `git stash drop` / `git reset --hard` / `git checkout -- .` / `git restore`** on changes that were not made by you in this task without explicit permission. If a stash is needed — create it with the message `lp-task <key>` and before `pop` check with `git stash list` that `stash@{0}` is exactly yours. If `git stash` printed «No local changes to save» — the stash was NOT created, `pop` must not be run.
-4. Run all git commands via `git -C <path>` with absolute paths.
+4. Run all git commands via `git -C <path>` with absolute paths. For a project that has `worktree` in the state, `<path>` is that worktree path everywhere (git commands, reading and editing code, lint, dev server, browser check); the project `path` is then only the main checkout the worktree belongs to.
 5. Create branches only from `origin/<base>` after `git fetch`, never from local branches.
 6. Force push — only `--force-with-lease=<branch>:<expected sha>` and only with the user's confirmation.
 7. Accompany every step with a short summary: what was done and what is next.
@@ -60,10 +66,22 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
   "title": "...",
   "branch": "ACME-1296",
   "projects": [
-    { "id": "web", "path": "/abs/path", "base": "main", "commit": null, "fixCommits": [], "pushed": false, "mr": null }
+    { "id": "web", "path": "/abs/path", "worktree": null, "base": "main", "commit": null, "fixCommits": [], "pushed": false, "mr": null }
   ]
 }
 ```
+
+`worktree` is the absolute path of the project's git worktree when the task is done in one, otherwise `null` (or absent). Commands take `worktree ?? path` as the working path of the project.
+
+## Worktrees
+
+Used only when the user chose a worktree for the task (`/lp-task:do`, step 5). Rules:
+
+- Create with `git -C <path> worktree add <worktrees.dir>/<key>-<id> -b <branch> origin/<base>` after `git fetch origin <base>`; create the directory if needed. If the branch is already checked out in another worktree — do not touch it, ask the user.
+- A worktree has no `node_modules`: right after creating it ask (AskUserQuestion), header «Зависимости»: «Установить зависимости в worktree?» — «`<pm> install`» / «Симлинк на node_modules основного чекаута» / «Пропустить».
+- Run a dev server of a worktree on a free port (not used by another task); take the URL from its output.
+- Remove a worktree only after the branch is pushed and only after the user confirms: `git -C <path> worktree remove <worktree>` without `--force`; if it refuses because of changes — show them and ask. After removal set `worktree` to `null` in the state.
+- Commits and push only via `/lp-task:commit` and `/lp-task:push`.
 
 ## MR message
 

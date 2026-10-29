@@ -14,6 +14,27 @@
 | `/lp-task:push [ключ]` | Пушит ветки, создаёт MR (GitLab) или PR (GitHub), выводит и копирует сообщение для команды |
 | `/lp-task:mr-copy [ключ]` | Повторно копирует сообщение с MR для команды |
 | `/lp-task:init [путь]` | Создаёт конфиг в диалоге |
+| `/lp-task:code-review [путь \| ссылка на MR \| mr]` | Ревью изменений или кода; для MR GitLab может опубликовать замечания комментариями в MR |
+| `/lp-task:unit-tests` | Пишет юнит-тесты или ревьюит существующие |
+
+Агент `browser-tester` (`agents/`) выполняет прогон чек-листа в браузере для `/lp-task:browser-test` и возвращает компактную таблицу.
+
+### Ревью перед коммитом
+
+`/lp-task:commit` сам ревью не запускает: он спрашивает «Запустить code-review перед коммитом?» (по умолчанию «Нет»). `--review` отвечает «Да» заранее, `review.beforeCommit: "never"` отключает вопрос.
+
+### Комментарии ревью в MR GitLab
+
+После ревью MR (`/lp-task:code-review <ссылка на MR>` или `mr`) скилл показывает, что будет опубликовано, и публикует только после вашего подтверждения. Приоритет инструментов: GitLab MCP, затем `glab`. Подключение:
+
+- `glab`: `glab auth login --hostname <host>`, проверка `glab auth status`;
+- GitLab MCP для self-hosted: `claude mcp add --transport http gitlab https://<host>/api/v4/mcp` и авторизация (проверьте адрес и требования версии в документации вашего GitLab). Официальный плагин `gitlab` смотрит на gitlab.com и для self-hosted не подходит.
+
+Подробности формата (inline-комментарии, дедупликация, итоговая сводка) в `skills/code-review/references/mr-comments.md`.
+
+### Worktree
+
+`/lp-task:do` спрашивает, делать ли задачу в отдельном git worktree (по умолчанию «Нет»). Это позволяет вести несколько задач одновременно в разных сессиях без смены веток. Worktree создаётся в `worktrees.dir`, его путь хранится в состоянии задачи, все команды работают в нём. После push `/lp-task:push` предлагает удалить worktree и вернуть ветку в основной чекаут.
 
 ## Установка
 
@@ -48,6 +69,12 @@
 | `mrMessage.link` | `* {label}: {url}` | Шаблон строки со ссылкой в `{links}`: `{label}`, `{id}`, `{url}`, `{base}` |
 | `mrMessage.clipboard` | `true` | Копировать сообщение как rich text (macOS), чтобы в рабочем чате сохранились список и ссылки |
 | `stateDir` | `~/.claude/lp-task/state` | Файлы состояния задач |
+| `review.beforeCommit` | `ask` | `ask` — `/lp-task:commit` спрашивает про ревью; `never` — не спрашивать (автозапуска нет) |
+| `review.postToMr` | `ask` | `ask` — предлагать публикацию замечаний в MR; `never` — не предлагать |
+| `review.minSeverity` | `medium` | Минимальная серьёзность для публикации: `critical`, `high`, `medium`, `low` |
+| `review.gitlab.mcpServer` | `gitlab` | Имя GitLab MCP сервера; запасной вариант `glab` |
+| `worktrees.mode` | `ask` | `ask` — спрашивать в `/lp-task:do` (по умолчанию «Нет»); `never` — не спрашивать; `always` — всегда worktree |
+| `worktrees.dir` | `~/.claude/lp-task/worktrees` | Где создаются worktree: `<dir>/<ключ>-<id проекта>` |
 | `projects[]` | текущий репозиторий | `id`, `label`, `path`, `pm`, `lint`, `dev`, `mobile`, `autoDetectOnly`, `notes[]` |
 | `planNotes[]` | `[]` | Дополнительные правила для шага планирования |
 | `browserTest.forbiddenActions[]` | платежи, ввод учётных данных, необратимые действия с аккаунтом | Что никогда не делается при проверке в браузере |

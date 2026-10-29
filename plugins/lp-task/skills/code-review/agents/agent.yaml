@@ -1,5 +1,5 @@
 interface:
-  display_name: "LP Code Review"
+  display_name: "Code Review"
   short_description: "Senior engineer code review: SOLID, security, performance, error handling. Supports targeted review of specific files, folders, or features."
   default_prompt: "Review current git changes for SOLID violations, security risks, race conditions, error handling issues, performance problems, and boundary condition bugs."
 

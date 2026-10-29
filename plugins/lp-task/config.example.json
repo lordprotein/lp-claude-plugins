@@ -20,6 +20,16 @@
     "clipboard": true
   },
   "stateDir": "~/.claude/lp-task/state",
+  "review": {
+    "beforeCommit": "ask",
+    "postToMr": "ask",
+    "minSeverity": "medium",
+    "gitlab": { "mcpServer": "gitlab" }
+  },
+  "worktrees": {
+    "mode": "ask",
+    "dir": "~/.claude/lp-task/worktrees"
+  },
   "projects": [
     {
       "id": "web",

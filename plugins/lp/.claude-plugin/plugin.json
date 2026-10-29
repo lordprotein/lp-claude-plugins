@@ -1,6 +1,6 @@
 {
   "name": "lp",
-  "description": "Skills: /lp:code-review, /lp:code-test-unit, /lp:code-test-e2e, /lp:explain-code",
+  "description": "Skills: /lp:code-test-e2e, /lp:explain-code",
   "author": {
     "name": "lordprotein"
   }

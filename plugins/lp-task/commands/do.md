@@ -11,7 +11,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, 
 
 ## Routing by argument
 
-- `status` → show the state from `<stateDir>/*.json` and `git -C <path> log --oneline -1` / `status --short` for every project of the task. Change nothing.
+- `status` → show the state from `<stateDir>/*.json` and `git -C <path> log --oneline -1` / `status --short` for every project of the task (for a project with `worktree` — in the worktree, and show its path). Change nothing.
 - task link or key → start from step 1 using it.
 - empty → start from step 1 and ask for the link.
 
@@ -53,12 +53,23 @@ Show a table: project → base → new branch.
 
 ## Step 5. Preflight and branch creation
 
+**Worktree question.** Before anything is created, decide where the task is done (see `## Worktrees` in shared.md):
+- `worktrees.mode: never` — the main checkouts, no question;
+- `worktrees.mode: always` — worktrees, no question;
+- `worktrees.mode: ask` (default) — ask (AskUserQuestion), header «Worktree»: «Делать задачу в отдельном worktree? (позволяет вести несколько задач одновременно)» — exactly 2 options, the first is the default: «Нет» / «Да». Without an answer — «Нет».
+
+With «Нет» this step works exactly as written below. With «Да» (or `always`) the only difference is in the branch creation at the end of this step: instead of `checkout -b` create a worktree per project, store its path in the state field `worktree`, and from then on work in it. `autoDetectOnly` projects get a worktree too, so parallel tasks do not collide in a shared library.
+
 For every project (checks only at first):
 1. `git -C <path> status --short` (untracked items from `git.ignorePaths` do not count as dirty). If there are changes in tracked files — show them and ask (AskUserQuestion): «Сохранить в stash `lp-task <key>`» / «Пропустить проект» / «Отменить». Do nothing without an answer.
 2. Branch: `git -C <path> rev-parse --verify --quiet <branch>` and `git -C <path> ls-remote --heads origin <branch>`. If it exists — ask: «Переиспользовать существующую» / «Пересоздать от базы (локально; remote не трогаю)» / «Отменить».
 3. `git -C <path> fetch origin <base>`.
 
-Then `git -C <path> checkout -b <branch> origin/<base>` (for «Пересоздать» — `checkout -B`), verify `branch --show-current`. Write the state.
+Then:
+- main checkout: `git -C <path> checkout -b <branch> origin/<base>` (for «Пересоздать» — `checkout -B`), verify `branch --show-current`;
+- worktree: `git -C <path> worktree add <worktrees.dir>/<key>-<id> -b <branch> origin/<base>` (for «Пересоздать» — `-B`; a branch that is already checked out in another worktree is not touched, ask the user), verify `git -C <worktree> branch --show-current`, then ask about dependencies as described in shared.md `## Worktrees`. Stash of «Сохранить в stash» belongs to the main checkout and is not needed for a fresh worktree: a dirty main checkout stays untouched.
+
+Write the state (with `worktree` for the projects that got one).
 
 ## Step 6. Implementation
 
@@ -66,7 +77,7 @@ Then `git -C <path> checkout -b <branch> origin/<base>` (for «Пересозд�
 2. If while planning it turns out that changes are needed in a project that is not in the task — say so with the reason. A regular project is added only after the user confirms it (AskUserQuestion); an `autoDetectOnly` project is added right away. Add it to the plan and go through steps 4–5 for it before implementing.
 3. If the task is about removing an entity — include in the plan the removal of artifacts that become unused (styles, images, imports), checking with `git grep` that no references remain. If you intentionally keep something — explicitly say why.
 4. For a shared library project: follow its CLAUDE.md and `notes`; warn that the dependent projects will see the changes only after a new version is published, and that their MRs must state the dependency on the library MR. Never bump the library version in a dependent project until that version is published to the registry — otherwise installs break.
-5. After the plan is approved — implement it.
+5. After the plan is approved — implement it (in the project's worktree if it has one: read and edit files by the worktree paths).
 6. Check: in every project with a non-empty `lint` run `git -C <path> diff --name-only --diff-filter=d | (cd <path> && xargs <lint>)` (do not pass the file list through a variable — zsh will not split it into arguments). Mark warnings that existed before the changes as pre-existing.
 
 ## Step 7. Waiting

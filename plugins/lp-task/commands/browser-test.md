@@ -9,6 +9,8 @@ Arguments: `$ARGUMENTS`
 
 First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
 
+For a project with `worktree` in the state, all paths below mean that worktree (see shared.md, hard rule 4): diffs, the `dev` command and `git grep` are run there, and its dev server must use a free port.
+
 ## Step 1. Task context
 
 1. `{key}` — from the arguments (via `tracker.keyRegex`); otherwise from the task of the current session; otherwise from the current branch of the working directory; otherwise the most recently modified `<stateDir>/*.json`. If it is still unknown — ask.
@@ -42,7 +44,10 @@ For every project of the task:
 
 ## Step 5. Run
 
-Go through the checklist for every project: navigate, interact, take a snapshot/screenshot of the key states, check the console and network after each scenario.
+Delegate the run to the `browser-tester` agent (`${CLAUDE_PLUGIN_ROOT}/agents/browser-tester.md`), one agent call per project, sequentially (projects share the browser login and tabs). Give it: the project label, the URL from step 4, the viewport (for `mobile` projects), the checklist rows of this project, `browserTest.forbiddenActions` and the project working path. It returns a compact table; screenshots stay out of this conversation.
+
+- If the agent answers `login required` — ask the user to log in in the opened Chrome window, wait, call it again.
+- If the agent answers `tools unavailable` (the subagent cannot reach the Chrome MCP) — do this step yourself in this session: go through the checklist for every project: navigate, interact, take a snapshot/screenshot of the key states, check the console and network after each scenario.
 
 Forbidden: everything from `browserTest.forbiddenActions`; committing. If an item requires such an action — mark it «⚠️ не проверено» with the reason.
 

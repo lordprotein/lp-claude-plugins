@@ -1,4 +1,4 @@
-# LP Code Test Unit
+# Unit Tests
 
 A comprehensive **unit testing** skill for AI agents. Focused exclusively on unit tests — one unit in isolation, dependencies mocked. Generates ideal tests and reviews existing ones using best practices from Kent Beck, Martin Fowler, Vladimir Khorikov, and Google.
 
@@ -24,7 +24,7 @@ Part of the `lp` plugin — see the root README of this repository.
 After installation, run:
 
 ```
-/lp:code-test-unit
+/lp-task:unit-tests
 ```
 
 ### Mode 1: Generate Tests
@@ -77,7 +77,7 @@ The skill reviews existing tests for quality issues:
 ## Structure
 
 ```
-code-test-unit/
+unit-tests/
 ├── SKILL.md                           # Main skill definition
 ├── agents/
 │   └── agent.yaml                     # Agent interface config

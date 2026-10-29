@@ -9,10 +9,13 @@ description: "Expert code review with a senior engineer lens. Reviews git change
 
 Perform a structured code review with focus on SOLID, architecture, removal candidates, and security risks. Default to review-only output unless the user asks to implement changes.
 
-**Two modes of operation:**
+**Three modes of operation:**
 
 - **Default mode** (no argument): Reviews current git changes via `git diff`.
 - **Targeted review mode** (with argument): Reviews specific code — a file path, folder, feature name, function, or keyword. The argument is interpreted flexibly: it can be a path (`src/auth/`), an entity name (`PaymentService`), or a description (`логика корзины`).
+- **MR mode** (argument is a merge request link, or `mr`): Reviews the diff of a GitLab merge request and can publish the findings as MR comments (step 9).
+
+If the project uses `/lp-task` config (see `${CLAUDE_PLUGIN_ROOT}/shared.md`), read its `review` section: `review.postToMr` (`ask` | `never`), `review.minSeverity`, `review.gitlab.mcpServer`. Without a config use the defaults from `${CLAUDE_PLUGIN_ROOT}/config.default.json`.
 
 ## Severity Levels
 
@@ -27,7 +30,12 @@ Perform a structured code review with focus on SOLID, architecture, removal cand
 
 ### 0) Mode detection
 
-If the user provides an argument (text after the skill command), switch to **targeted review mode**:
+If the argument is a merge request link (`.../-/merge_requests/<iid>`) or the word `mr` (take the MR from the current task state `<stateDir>/<key>.json` field `mr`, or from the open MR of the current branch), switch to **MR mode**:
+
+1. Resolve the project and MR iid, load the MR diff by following `references/mr-comments.md` (section «Reading the MR»).
+2. Review exactly the lines changed by the MR; skip step 1 (git diff) and continue from step 2. Remember `base_sha`, `start_sha`, `head_sha` and the changed files, they are needed for step 9.
+
+Otherwise, if the user provides an argument (text after the skill command), switch to **targeted review mode**:
 
 1. **Determine target type**:
    - If argument looks like a file/directory path → read those files directly
@@ -44,7 +52,7 @@ If no argument is provided → proceed to step 1 (default git diff review).
 
 ### 1) Preflight context
 
-> **Note**: In targeted review mode (step 0), this step is skipped — the review scope is already established.
+> **Note**: In targeted review mode and MR mode (step 0), this step is skipped — the review scope is already established.
 
 - Use `git status -sb`, `git diff --stat`, and `git diff` to scope changes.
 - If needed, use `rg` or `grep` to find related modules, usages, and contracts.
@@ -187,4 +195,16 @@ I found X issues (🔴 Critical: _, 🟠 High: _, 🟡 Medium: _, 🟢 Low: _).
 ```
 
 **Important**: Do NOT implement any changes until user explicitly confirms. This is a review-first workflow.
+
+### 9) Publish findings to the merge request (optional)
+
+Runs only when there is a GitLab MR for the reviewed code (MR mode, or the current task/branch has an open MR) and `review.postToMr` is not `never`. Otherwise skip silently.
+
+Publishing is an outward-facing action: never post anything without an explicit answer.
+
+1. Collect the findings with severity ≥ `review.minSeverity` (default `medium`; 🟢 only on request).
+2. Show a preview table: `#`, severity, title, `file:line`, `inline` or `general note` (per `references/mr-comments.md`, section «Placement»).
+3. Ask (AskUserQuestion), header «MR»: «Опубликовать комментарии в MR?» — «Опубликовать все» / «Только 🔴🟠» / «Не публиковать». «Не публиковать» ends the step.
+4. Post exactly the confirmed set by following `references/mr-comments.md` (tools order: GitLab MCP, then `glab`; dedup; inline discussions with fallback to a general note; one summary note).
+5. Print what was posted: counts, and links to the discussions if the tool returned them. Never resolve, edit or delete existing comments.
 

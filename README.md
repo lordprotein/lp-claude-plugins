@@ -4,8 +4,8 @@ Personal Claude Code marketplace.
 
 | Plugin | What's inside |
 |--------|---------------|
-| `lp` | `/lp:code-review`, `/lp:code-test-unit`, `/lp:code-test-e2e`, `/lp:explain-code` |
-| `lp-task` | `/lp-task:do`, `/lp-task:commit`, `/lp-task:push`, `/lp-task:browser-test`, `/lp-task:mr-copy`, `/lp-task:init` |
+| `lp` | `/lp:code-test-e2e`, `/lp:explain-code` |
+| `lp-task` | `/lp-task:do`, `/lp-task:commit`, `/lp-task:push`, `/lp-task:browser-test`, `/lp-task:mr-copy`, `/lp-task:init`, `/lp-task:code-review`, `/lp-task:unit-tests` |
 
 ## Installation
 

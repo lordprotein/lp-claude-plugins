@@ -11,6 +11,8 @@ First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, 
 
 Invoking this command is an explicit permission to push.
 
+For a project with `worktree` in the state, all paths below mean that worktree (see shared.md, hard rule 4).
+
 ## Which task
 
 1. The key from the argument (via `tracker.keyRegex`), otherwise — the task from the current context.
@@ -46,3 +48,9 @@ Update the state (`pushed`, `mr`) and print a table:
 And separately all the links as a list, so they are easy to copy.
 
 Then build, print and copy the MR message per `## MR message` in shared.md.
+
+## Worktrees cleanup
+
+Only if at least one pushed project has `worktree` in the state. Ask (AskUserQuestion), header «Worktree»: «Забрать ветки в основной чекаут и удалить worktree?» — exactly 2 options: «Нет» / «Да».
+- «Нет» — leave the worktrees as they are, print their paths.
+- «Да» — for every such project: `git -C <worktree> status --short` must be clean (otherwise show the changes and skip the project); `git -C <path> worktree remove <worktree>` without `--force`; then, only if the main checkout has no changes in tracked files, `git -C <path> checkout <branch>`; otherwise leave the main checkout on its branch and say so. Set `worktree` to `null` in the state.
