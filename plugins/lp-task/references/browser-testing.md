@@ -1,6 +1,6 @@
 # Browser testing: best practices
 
-Used by `/lp-task:test-browser` to build the checklist (step 2) and by the `browser-tester` agent to run it. Goal: cover the task with positive, negative and edge scenarios chosen by risk, without exploding the checklist.
+Used by `/lp-task:test-browser` to build the checklist (step 2) and when it runs the checklist itself. The `browser-tester` agent does not read this file: its procedure carries the run rules. Goal: cover the task with positive, negative and edge scenarios chosen by risk, without exploding the checklist.
 
 ## 1. Principles
 

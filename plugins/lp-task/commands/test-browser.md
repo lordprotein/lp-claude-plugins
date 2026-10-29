@@ -13,11 +13,11 @@ First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, 
 
 1. `{key}` — from the arguments (via `tracker.keyRegex`); otherwise from the task of the current session; otherwise from the current branch of the working directory; otherwise the most recently modified `<stateDir>/*.json`. If it is still unknown — ask.
 2. Read `<stateDir>/<key>.json`: projects, paths, bases. If there is no state — ask which projects to check (AskUserQuestion, `multiSelect: true`, projects from the config).
-3. Read the task as in `do.md`, step 1 (Atlassian MCP, browser as a fallback) — you need the scenarios and acceptance criteria. If neither works — rely on the summary from the state and the diff.
+3. If the task was already read in this session (for example by `/lp-task:do`), use it from the context. Otherwise read it as in `do.md`, step 1 (Atlassian MCP, browser as a fallback): you need the scenarios and acceptance criteria. If neither works, rely on the summary from the state and the diff.
 
 ## Step 2. Checklist
 
-For every project collect the changes: `git -C <path> diff origin/<base>...HEAD` plus uncommitted ones (`git -C <path> diff HEAD`). Build a checklist:
+For every project collect the changes: start with `git -C <path> diff --stat --merge-base origin/<base>` (committed and uncommitted together; add untracked new files from `status --short`), then read the diff `git -C <path> diff --merge-base origin/<base> -- . ':!*lock*' ':!*.snap'` (also skip generated and built files seen in the stat). Changes made in this session that are already in the context need not be read again. Build a checklist:
 
 - **Acceptance** — every scenario the task requires (what must appear / disappear / behave differently), including the states mentioned in the task.
 - **Regression** — everything that could break because of the changes:
@@ -44,7 +44,7 @@ For every project of the task:
 
 ## Step 5. Run
 
-Delegate the run to the `browser-tester` agent (`${CLAUDE_PLUGIN_ROOT}/agents/browser-tester.md`), one agent call per project, sequentially (projects share the browser login and tabs). Give it: the project label, the URL from step 4, the viewport (for `mobile` projects), the checklist rows of this project (with kind, priority and expected result), `browserTest.forbiddenActions`, the project working path and the path `${CLAUDE_PLUGIN_ROOT}/references/browser-testing.md` (the agent reads it). It runs P1 rows first and returns a compact table; screenshots stay out of this conversation.
+Delegate the run to the `browser-tester` agent (`${CLAUDE_PLUGIN_ROOT}/agents/browser-tester.md`), one agent call per project, sequentially (projects share the browser login and tabs). Give it: the project label, the URL from step 4, the viewport (for `mobile` projects), the checklist rows of this project (with kind, priority and expected result), `browserTest.forbiddenActions` and the project working path. It runs P1 rows first and returns a compact table; screenshots stay out of this conversation.
 
 - If the agent answers `login required` — ask the user to log in in the opened Chrome window, wait, call it again.
 - If the agent answers `tools unavailable` (the subagent cannot reach the Chrome MCP) — do this step yourself in this session: go through the checklist for every project following `${CLAUDE_PLUGIN_ROOT}/references/browser-testing.md` (P1 first; positive, negative and edge rows): navigate, interact, take a snapshot/screenshot of the key states, check the console and network after each scenario.

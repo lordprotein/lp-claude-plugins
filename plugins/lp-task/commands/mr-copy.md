@@ -22,4 +22,4 @@ Take the placeholders of `mrMessage.lines` from the state: `{key}` from `key`, `
 
 If no project has `mr` — say that there are no MRs yet and suggest `/lp-task:push`; do not touch the clipboard.
 
-Otherwise build, print and copy the MR message per `## MR message` in shared.md.
+Otherwise build, print and copy the MR message per `${CLAUDE_PLUGIN_ROOT}/references/mr-message.md`.

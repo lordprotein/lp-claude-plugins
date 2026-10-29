@@ -45,4 +45,4 @@ Update the state (`pushed`, `mr`) and print a table:
 
 And separately all the links as a list, so they are easy to copy.
 
-Then build, print and copy the MR message per `## MR message` in shared.md.
+Then build, print and copy the MR message per `${CLAUDE_PLUGIN_ROOT}/references/mr-message.md`.
