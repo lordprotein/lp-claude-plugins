@@ -1,6 +1,6 @@
 ---
 name: test-unit
-description: "Write ideal unit tests and review existing ones. Focused exclusively on unit testing — tests one unit in isolation. Not for integration or E2E tests. Two modes: generate new tests from code analysis, or review existing tests for antipatterns and quality issues. Language-agnostic, based on best practices from Beck, Fowler, Khorikov, and Google."
+description: "Write ideal unit tests and review existing ones. Focused exclusively on unit testing — tests one unit in isolation. Not for integration or E2E tests. Two modes: generate new tests from code analysis, or review existing tests for antipatterns and quality issues."
 ---
 
 # Unit Test Expert
@@ -37,7 +37,7 @@ This skill is focused **exclusively on unit testing**:
 
 ### 0) Determine test scope
 
-**MANDATORY** — you MUST perform this step BEFORE preflight. Do NOT skip it.
+Required, before preflight.
 
 - Analyze the target code and determine which categories are present:
   - **Business logic / domain model** — core rules, algorithms, calculations, state machines
@@ -68,9 +68,9 @@ This skill is focused **exclusively on unit testing**:
 
 ### 2) Classify code (Khorikov matrix)
 
-**MANDATORY** — you MUST load and apply the classification matrix. Do NOT skip this step, do NOT generate tests without classifying first.
+Required: classify every unit before generating any test.
 
-- Load `references/testing-principles.md` for the classification matrix.
+- Classification axes: complexity / domain significance vs number of collaborators. If a unit's category is ambiguous, load `references/testing-principles.md` for the matrix rationale and the Humble Object example.
 - Categorize each unit of code:
 
 | Category | Test strategy |
@@ -83,13 +83,11 @@ This skill is focused **exclusively on unit testing**:
 | **Overcomplicated code** (high complexity + many dependencies) | Recommend refactoring first, then test |
 
 - Report the classification to the user before generating tests.
-- If code is overcomplicated, suggest applying Humble Object pattern to extract testable logic.
+- If code is overcomplicated, suggest the Humble Object pattern: push domain logic into objects with no infrastructure dependencies (unit test them), leave a thin orchestrator (integration test only).
 
 ### 3) Determine test scenarios
 
-**MANDATORY** — you MUST load scenario identification techniques before determining scenarios. Do NOT rely on general knowledge alone.
-
-- Load `references/business-logic-testing.md` for scenario identification techniques.
+- **If business logic or utility / hooks tests selected in step 0** → required: load `references/business-logic-testing.md` (decision tables, boundaries, invariants, state machines, error paths, partitions, concurrency). Do not rely on general knowledge alone.
 - For each domain logic unit, identify:
   - **Happy paths**: Core business rules, primary use cases
   - **Decision table scenarios**: All condition combinations for complex rules
@@ -101,7 +99,7 @@ This skill is focused **exclusively on unit testing**:
 
 ### 4) Generate tests
 
-**MANDATORY** — you MUST load the reference files listed below before generating any test code.
+Required: load these before writing any test code.
 
 - Load `references/test-design-patterns.md` for patterns.
 - Load `references/test-doubles-guide.md` for double selection.
@@ -114,6 +112,9 @@ This skill is focused **exclusively on unit testing**:
 - One Act per test — never test multiple behaviors in one test
 - No conditional logic in tests (no if/for/try-catch)
 - Group tests logically (by behavior/feature, using describe/context if framework supports)
+- Test observable behavior only (return values, visible state, calls to unmanaged out-of-process deps). Litmus: could the implementation change without changing any test?
+- Verification style preference: output-based > state-based > communication-based (mocks)
+- Deterministic and fast: no randomness, real time, sleep, network, DB or file I/O; inject clocks and fakes
 
 **Naming:**
 - Use project's existing naming convention if detected
@@ -147,18 +148,22 @@ This skill is focused **exclusively on unit testing**:
 
 ### 5) Self-check against antipatterns
 
-**MANDATORY** — you MUST load the antipatterns checklist and run EVERY check below for EACH generated test. Do NOT output tests without completing this verification.
+Required: run EVERY check below for EACH generated test before output.
 
-- Load `references/antipatterns-checklist.md`.
-- Before outputting, verify each generated test against:
-  - [ ] Not a Liar — has meaningful assertions
-  - [ ] Not a Giant — single Act, focused assertions
-  - [ ] Not a Mockery — minimal, justified mocks
-  - [ ] Not an Inspector — tests public behavior only
-  - [ ] Not Fragile — would survive refactoring
-  - [ ] No shared mutable state
-  - [ ] No conditional logic
-  - [ ] Not testing trivial code
+| Antipattern | Key signal (must be absent) | Severity | Fix |
+|-------------|-----------------------------|----------|-----|
+| The Liar | No meaningful assert, only "not null" / "doesn't throw", asserting a stub's own return value | P0 | Assert a specific expected outcome |
+| Shared Mutable State | Tests affect each other, order matters, class/module state mutated | P0 | Fresh state per test, reset in setup |
+| The Giant | Multiple Acts, many unrelated asserts | P1 | One behavior per test |
+| The Mockery | Mock setup > test logic, mocking the SUT or value objects, chained mock returns | P1 | Real in-process objects, mock only unmanaged deps |
+| The Inspector | Private fields/methods, reflection | P1 | Public API only, extract complex private logic |
+| Fragile Tests | Breaks on refactor: call sequences, internal structures, internal collaborators mocked | P1 | Assert outcomes, not call order |
+| Ice Cream Cone | Mostly E2E, few unit tests (suite level) | P1 | Push logic into units |
+| The Slow Poke | sleep() or real I/O | P2 | Inject clocks, fakes, <100ms per test |
+| Second Class Citizen | Copy-paste, magic values, no helpers, dead tests | P2 | Helpers, builders, clear names |
+| Conditional Logic | if/for/try in test body | P2 | Separate tests or parameterized rows |
+| 100% Coverage Trap | Tests for getters, DTOs, one-line delegations, constants | P3 | Delete, test real logic |
+
 - If any check fails, fix the test before outputting.
 
 ### 6) Output format
@@ -223,13 +228,13 @@ This skill is focused **exclusively on unit testing**:
 
 ### 2) Evaluate against checklist
 
-**MANDATORY** — you MUST load ALL THREE reference files below. Do NOT evaluate from memory alone.
+Required: load ALL THREE files below. Do not evaluate from memory alone.
 
 - Load `references/test-review-checklist.md` for the full checklist.
 - Load `references/antipatterns-checklist.md` for antipattern detection.
 - Load `references/test-doubles-guide.md` for doubles assessment.
 
-**MANDATORY procedure** — follow this exact sequence for every review. Do NOT skip steps or merge findings:
+Required procedure, in this exact order, no skipped steps or merged findings:
 1. **Scan for Liars** (P0) — meaningful assertions in every test?
 2. **Check isolation** (P0) — shared mutable state?
 3. **Check doubles usage** (P1) — over-mocking? mocking internals?
@@ -299,9 +304,3 @@ Please choose an option or provide specific instructions.
 ```
 
 **Important**: Do NOT implement any changes until user explicitly confirms. This is a review-first workflow.
-
----
-
-## Resources
-
-Reference files are in `references/`. Each step above specifies which files to load.

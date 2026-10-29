@@ -1,9 +1,5 @@
 # Test Review Checklist
 
-_Severity levels P0-P3 are defined in SKILL.md._
-
----
-
 ## 1. Four Pillars Assessment
 
 ### Protection Against Regressions
@@ -27,11 +23,7 @@ _Severity levels P0-P3 are defined in SKILL.md._
 **Red flag**: If refactoring internal implementation (without changing behavior) would break tests → P1 finding.
 
 ### Fast Feedback
-- [ ] No `sleep()`, `time.sleep()`, or real delays in unit tests
-- [ ] No real network calls or database queries in unit tests
-- [ ] No file system I/O in unit tests (use fakes or in-memory)
-- [ ] Individual test runs in under 100ms
-- [ ] Full unit suite runs in under 30 seconds
+- [ ] Slow Poke checks (antipatterns-checklist.md), plus: full unit suite runs in under 30 seconds
 
 ### Maintainability
 - [ ] Tests are readable and self-contained
@@ -44,7 +36,7 @@ _Severity levels P0-P3 are defined in SKILL.md._
 
 ## 2. Antipattern Detection
 
-Apply every check from `antipatterns-checklist.md` (loaded alongside this file). Use the detection table there for severity classification.
+Apply every check from `antipatterns-checklist.md`, severity from its detection table.
 
 ---
 
@@ -77,10 +69,7 @@ Apply every check from `antipatterns-checklist.md` (loaded alongside this file).
 - [ ] No mocking of standard library / language primitives
 
 ### Problematic patterns
-- [ ] Mocking the class under test (always wrong)
-- [ ] Deeply nested mock returns (`mock.a.b.c.return_value`)
-- [ ] Verifying exact call counts/order on internal methods
-- [ ] Mock setup longer than the test itself
+- [ ] Mockery / Fragile signs (antipatterns-checklist.md): mocking the SUT, chained mock returns, call counts/order on internals, mock setup longer than the test
 - [ ] Mocking what you don't own (third-party libraries directly)
 
 ---
@@ -105,22 +94,7 @@ Apply every check from `antipatterns-checklist.md` (loaded alongside this file).
 
 ## 6. Test Isolation
 
-- [ ] Tests can run in any order
+- [ ] Shared Mutable State checks (antipatterns-checklist.md), plus:
 - [ ] Tests can run in parallel
-- [ ] No shared mutable state between tests
-- [ ] Each test creates its own data
 - [ ] Cleanup happens in teardown, not in the next test's setup
-- [ ] No dependency on external services (database, API, file system) in unit tests
 - [ ] Time-dependent tests use injected clocks, not real time
-
----
-
-## Review Output Format
-
-Follow the output format defined in SKILL.md (Mode 2 Step 4).
-
----
-
-## Review Sequence
-
-Follow the mandatory 8-step review procedure in SKILL.md (Mode 2 Step 2).

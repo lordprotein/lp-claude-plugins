@@ -47,20 +47,7 @@ assert email_sent == True        # Different concern — separate test
 
 ## Given-When-Then (BDD Style)
 
-```
-def test_overdue_invoice_incurs_late_fee():
-    # Given an invoice past its due date
-    invoice = Invoice(due_date=days_ago(30), amount=1000)
-
-    # When the system calculates fees
-    invoice.apply_late_fees()
-
-    # Then a 5% late fee is added
-    assert invoice.total == 1050
-    assert invoice.has_late_fee == True
-```
-
-Equivalent to AAA but emphasizes **business language**. Use when tests serve as documentation for stakeholders.
+Same as AAA with Given / When / Then comments, emphasizing business language. Use when tests serve as documentation for stakeholders.
 
 ---
 
@@ -94,24 +81,7 @@ def test_premium_discount():
 
 ## Object Mother Pattern
 
-Factory methods for common test scenarios:
-
-```
-class TestCustomers:
-    @staticmethod
-    def loyal():
-        return Customer(loyalty_years=5, tier="gold", active=True)
-
-    @staticmethod
-    def new():
-        return Customer(loyalty_years=0, tier="standard", active=True)
-
-    @staticmethod
-    def inactive():
-        return Customer(loyalty_years=2, tier="silver", active=False)
-```
-
-**Builder vs Object Mother**: Use Object Mother for common, well-known scenarios. Use Builder when tests need fine-grained control over individual fields.
+Named factory methods for common, well-known scenarios (`TestCustomers.loyal()`, `.new()`, `.inactive()`). Use Object Mother for well-known scenarios, Builder when tests need fine-grained control over individual fields.
 
 ---
 
@@ -148,46 +118,13 @@ test_loyalty_discount(amount, years, expected_discount):
 
 ## Property-Based Testing
 
-Instead of specific examples, define properties that must always hold:
-
-```
-// Property: sorting is idempotent
-// for any random list of integers:
-test_sort_idempotent(lst):
-    assert sorted(sorted(lst)) == sorted(lst)
-
-// Property: discount never exceeds item price
-// for any random price in [0, 10000]:
-test_discount_never_exceeds_price(price):
-    item = Item(price=price)
-    assert item.discounted_price() >= 0
-    assert item.discounted_price() <= price
-```
-
-**Use for**: mathematical properties, invariants, serialization roundtrips, idempotency. Complements example-based tests, doesn't replace them.
+Define properties that must hold for any generated input (e.g. `sorted(sorted(x)) == sorted(x)`, `0 <= discounted_price <= price`). Use for mathematical properties, invariants, serialization roundtrips, idempotency. Complements example-based tests, doesn't replace them.
 
 ---
 
 ## Test Naming Conventions
 
-### Khorikov's approach: describe behavior in plain language
-```
-test_delivery_with_past_date_is_invalid
-test_discount_is_calculated_for_loyal_customer
-test_order_with_no_items_cannot_be_submitted
-```
-
-### Google's approach: methodName_condition_expectedResult
-```
-test_calculateDiscount_loyalCustomer_returns15Percent
-test_submit_emptyOrder_throwsValidationError
-```
-
-### BDD style: should + behavior
-```
-test_should_apply_loyalty_discount_for_customers_with_3_plus_years
-test_should_reject_order_when_inventory_insufficient
-```
+Accepted styles (follow the project's convention): plain-language behavior (`test_delivery_with_past_date_is_invalid`), `methodName_condition_expectedResult` (`test_submit_emptyOrder_throwsValidationError`), BDD `should_` + behavior (`test_should_reject_order_when_inventory_insufficient`).
 
 ### Naming rules
 | Rule | Example |
