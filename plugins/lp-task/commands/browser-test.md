@@ -51,6 +51,17 @@ Delegate the run to the `browser-tester` agent (`${CLAUDE_PLUGIN_ROOT}/agents/br
 
 Forbidden: everything from `browserTest.forbiddenActions`; committing. If an item requires such an action — mark it «⚠️ не проверено» with the reason.
 
+## Step 5a. Mocks for what could not be checked
+
+If some rows came back `⚠️` (no test data, a backend or third-party service is unavailable, the state cannot be reached, the action is forbidden, and so on) — never mock without asking. For every project with such rows ask (AskUserQuestion), header «Моки»: «Не удалось проверить в <label>: <rows with reasons>. Замокать?» — exactly 2 options: «Да» / «Нет».
+
+- «Нет» — the rows stay `⚠️`.
+- «Да» — mock and check these rows again:
+  - prefer browser-level mocks without code changes: substitute the responses of the needed requests (patch `fetch` / `XMLHttpRequest` via `javascript_tool`, request interception of chrome-devtools) and re-apply them after every reload or navigation. Delegate the re-run to `browser-tester` with these rows and the mock to install (which request, what response);
+  - only if the data cannot be substituted in the browser (server rendering, data from the store at startup, a feature flag) — a temporary code mock in the working tree: before it remember `git -C <path> status --short` and `git -C <path> diff --stat`, mark every mock with the comment `lp-task mock`, check the rows yourself, then remove all the mocks and verify that `status` and `diff` are exactly as before. Mocks are never committed;
+  - a mock replaces the real request completely: nothing from `forbiddenActions` is really performed;
+  - in the report mark such rows «✅ (мок)» / «❌ (мок)» and say what was mocked.
+
 ## Step 6. Report
 
 A table: project → kind → item → ✅ / ❌ / ⚠️ → short comment. For every ❌ — steps, what was expected, what actually happens, environment (viewport, language, user state), a screenshot and the probable cause in the code (file:line); mark failures that also exist without the change as `pre-existing`.
@@ -61,4 +72,4 @@ If there are ❌ — ask (AskUserQuestion): «Исправить» / «Оста�
 
 ## Step 7. Finish
 
-Stop the dev servers you started (only yours). Say: «Проверка завершена. Для коммита — `/lp-task:commit`».
+Make sure no `lp-task mock` is left in the code (`git -C <path> grep -n "lp-task mock"`). Stop the dev servers you started (only yours). Say: «Проверка завершена. Для коммита — `/lp-task:commit`».

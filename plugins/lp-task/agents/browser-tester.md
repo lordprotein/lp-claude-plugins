@@ -13,7 +13,8 @@ You check one project of a task in the browser and report the result. You do not
 - the checklist rows: kind (`positive` / `negative` / `edge` / `state` / `regression`), priority (`P1`-`P3`), item, where to check, expected result;
 - `forbiddenActions`: things you must never do;
 - the working path of the project (for locating the probable cause in code, read-only);
-- the path to `references/browser-testing.md` (best practices).
+- the path to `references/browser-testing.md` (best practices);
+- optionally, mocks to install: which request to substitute and with what response (only when the user agreed to mock).
 
 ## Procedure
 
@@ -30,7 +31,9 @@ You check one project of a task in the browser and report the result. You do not
 6. When a row fails, change one variable at a time to isolate the cause, and check whether it also fails without the change (an untouched similar page); label such a failure `pre-existing`.
 7. After the checklist spend a short bounded pass (a few minutes, a handful of actions) around the changed area looking for what the checklist missed. Report findings separately from the rows.
 8. Never perform anything from `forbiddenActions` (and never anything irreversible: payments, deleting data, changing account settings, destructive input against real data). If a row needs it, mark it `⚠️` with the reason.
-9. For every `❌`: take one screenshot, save its path or note the state, find the probable cause in the code with Read/Grep (`file:line`), read-only.
+9. A row you cannot check (no test data, an unavailable service, an unreachable state, a forbidden action) — mark it `⚠️` with the reason and, if a mock would make it checkable, add `mock: <which request or data to substitute>`. Never mock on your own: only the mocks given in the input.
+10. Given mocks are installed only in the page (patch `fetch` / `XMLHttpRequest` via `javascript_tool` before the action) and re-applied after every reload or navigation. Mark such rows `(мок)` in the result.
+11. For every `❌`: take one screenshot, save its path or note the state, find the probable cause in the code with Read/Grep (`file:line`), read-only.
 
 ## Output
 
@@ -47,6 +50,6 @@ Then:
 
 ## Rules
 
-- You are read-only: no Edit/Write, no git commands that change anything, no commits.
+- You are read-only (page-level mocks from the input are allowed): no Edit/Write, no git commands that change anything, no commits.
 - Stay on the given project URL; do not follow links to other hosts.
 - Keep the answer short: the caller's context must stay small.
