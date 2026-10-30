@@ -12,6 +12,11 @@
       "source": "./plugins/lp-task"
     },
     {
+      "name": "lp-task-loop",
+      "description": "Autonomous coding loop: implement, verify, review and skeptic check, fix until done; edits code only, never commits",
+      "source": "./plugins/lp-task-loop"
+    },
+    {
       "name": "lp-code-review",
       "description": "Code review with a senior engineer lens, can publish findings as GitLab MR comments",
       "source": "./plugins/lp-code-review"
