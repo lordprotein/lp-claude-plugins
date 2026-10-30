@@ -48,7 +48,7 @@ Take all templates, paths and the project list only from the merged config.
 2. **Never mention Claude / Claude Code** in commits and MRs: no `Co-Authored-By`, no «Generated with», no AI attribution of any kind. The commit message is only the line built from the template.
 3. **Never run `git stash pop` / `git stash drop` / `git reset --hard` / `git checkout -- .` / `git restore`** on changes that were not made by you in this task without explicit permission. If a stash is needed — create it with the message `lp-task <key>` and before `pop` check with `git stash list` that `stash@{0}` is exactly yours. If `git stash` printed «No local changes to save» — the stash was NOT created, `pop` must not be run.
 4. Run all git commands via `git -C <path>` with absolute paths.
-5. Create branches only from `origin/<base>` after `git fetch`, never from local branches.
+5. Create branches only from `origin/<base>` after `git fetch`. From a local branch — only when the user chose «От текущих веток» in `do.md` step 3 (`baseFrom: local`).
 6. Force push — only `--force-with-lease=<branch>:<expected sha>` and only with the user's confirmation.
 7. Accompany every step with a short summary: what was done and what is next.
 8. In browser checks never perform anything from `browserTest.forbiddenActions` and never type credentials — ask the user to log in.
@@ -63,7 +63,7 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
   "title": "...",
   "branch": "ACME-1296",
   "projects": [
-    { "id": "web", "path": "/abs/path", "base": "main", "commit": null, "fixCommits": [], "pushed": false, "mr": null }
+    { "id": "web", "path": "/abs/path", "base": "main", "baseFrom": "origin", "commit": null, "fixCommits": [], "pushed": false, "mr": null }
   ]
 }
 ```
