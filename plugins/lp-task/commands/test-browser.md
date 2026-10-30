@@ -7,7 +7,13 @@ argument-hint: "[task key]"
 
 Arguments: `$ARGUMENTS`
 
-First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
+## Step 0. Screenshots
+
+Before anything else (before reading files or the task) ask (AskUserQuestion), header «Скриншоты»: «Делать скриншоты по ходу проверки?» — «Да» / «Нет». Remember the answer as `screenshots`.
+
+With «Да» screenshots are saved as files in `<stateDir>/<key>/screenshots/` (create it once `{key}` is known): the key state of every checked row, named `<project>-<row number>-<short slug>.png`, and on re-runs after a fix `<project>-<row number>-<short slug>-after.png`, so the user can compare what changed. With «Нет» only the ❌ rows get a screenshot, as before.
+
+Then read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
 
 ## Step 1. Task context
 
@@ -44,10 +50,10 @@ For every project of the task:
 
 ## Step 5. Run
 
-Delegate the run to the `browser-tester` agent (`${CLAUDE_PLUGIN_ROOT}/agents/browser-tester.md`), one agent call per project, sequentially (projects share the browser login and tabs). Give it: the project label, the URL from step 4, the viewport (for `mobile` projects), the checklist rows of this project (with kind, priority and expected result), `browserTest.forbiddenActions` and the project working path. It runs P1 rows first and returns a compact table; screenshots stay out of this conversation.
+Delegate the run to the `browser-tester` agent (`${CLAUDE_PLUGIN_ROOT}/agents/browser-tester.md`), one agent call per project, sequentially (projects share the browser login and tabs). Give it: the project label, the URL from step 4, the viewport (for `mobile` projects), the checklist rows of this project (with kind, priority and expected result), `browserTest.forbiddenActions`, the project working path and, if `screenshots` is «Да», the screenshot directory (and the `-after` suffix on re-runs after a fix). It runs P1 rows first and returns a compact table; screenshots stay out of this conversation.
 
 - If the agent answers `login required` — ask the user to log in in the opened Chrome window, wait, call it again.
-- If the agent answers `tools unavailable` (the subagent cannot reach the Chrome MCP) — do this step yourself in this session: go through the checklist for every project following `${CLAUDE_PLUGIN_ROOT}/references/browser-testing.md` (P1 first; positive, negative and edge rows): navigate, interact, take a snapshot/screenshot of the key states, check the console and network after each scenario.
+- If the agent answers `tools unavailable` (the subagent cannot reach the Chrome MCP) — do this step yourself in this session: go through the checklist for every project following `${CLAUDE_PLUGIN_ROOT}/references/browser-testing.md` (P1 first; positive, negative and edge rows): navigate, interact, take a snapshot/screenshot of the key states (with `screenshots` = «Да» save them to the screenshot directory as described in step 0), check the console and network after each scenario.
 
 Forbidden: everything from `browserTest.forbiddenActions`; committing. If an item requires such an action — mark it «⚠️ не проверено» with the reason.
 
@@ -66,9 +72,9 @@ If some rows came back `⚠️` (no test data, a backend or third-party service 
 
 A table: project → kind → item → ✅ / ❌ / ⚠️ → short comment. For every ❌ — steps, what was expected, what actually happens, environment (viewport, language, user state), a screenshot and the probable cause in the code (file:line); mark failures that also exist without the change as `pre-existing`.
 
-Under the table add a coverage line (counts per kind: positive / negative / edge / state / regression, and what was deliberately not covered) and, if the agent reported any, the «Дополнительные наблюдения» found outside the checklist.
+Under the table add a coverage line (counts per kind: positive / negative / edge / state / regression, and what was deliberately not covered) and, if the agent reported any, the «Дополнительные наблюдения» found outside the checklist. With `screenshots` = «Да» add the screenshot directory path.
 
-If there are ❌ — ask (AskUserQuestion): «Исправить» / «Оставить как есть». On «Исправить» — fix following the rules of `do.md` step 6 (lint included), then re-run only the failed items plus the regression around the fix and show the updated report.
+If there are ❌ — ask (AskUserQuestion): «Исправить» / «Оставить как есть». On «Исправить» — fix following the rules of `do.md` step 6 (lint included), then re-run only the failed items plus the regression around the fix and show the updated report. With `screenshots` = «Да» the re-run saves `-after` screenshots, and the updated report lists for every fixed row the pair of files (before → after).
 
 ## Step 7. Finish
 
