@@ -1,7 +1,7 @@
 {
   "name": "lp-task",
-  "version": "2.1.0",
-  "description": "Commands /lp-task:do (tracker task → project selection → plan → branches → implementation, optionally in the autonomous lp-task-loop), /lp-task:test-browser (full browser check via Chrome MCP), /lp-task:commit (commit the task changes in all of its projects, then offer to push), /lp-task:push (push + MR/PR), /lp-task:mr-copy (copy the team MR message again) and /lp-task:init (create a project config)",
+  "version": "2.2.0",
+  "description": "Commands /lp-task:do (tracker task → project selection → plan → branches → implementation, optionally in the autonomous lp-task-loop), /lp-task:test-browser (browser run via Chrome MCP: reproduce the bug before the fix or check the changes), /lp-task:commit (commit the task changes in all of its projects, then offer to push), /lp-task:push (push + MR/PR), /lp-task:mr-copy (copy the team MR message again) and /lp-task:init (create a project config)",
   "author": {
     "name": "lordprotein"
   }

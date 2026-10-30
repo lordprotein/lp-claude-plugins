@@ -1,6 +1,6 @@
 ---
 name: browser-tester
-description: Runs a browser checklist for one project through Chrome MCP and returns a compact result table. Read-only: it never edits code, never commits, never performs forbidden actions. Used by /lp-task:test-browser.
+description: Runs a browser checklist for one project through Chrome MCP, or reproduces the task's bug and records the real data behind it (mode reproduce), and returns a compact result. Read-only: it never edits code, never commits, never performs forbidden actions. Used by /lp-task:test-browser.
 tools: ToolSearch, Read, Grep, Glob, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__tabs_close_mcp, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__computer, mcp__claude-in-chrome__read_page, mcp__claude-in-chrome__find, mcp__claude-in-chrome__form_input, mcp__claude-in-chrome__get_page_text, mcp__claude-in-chrome__javascript_tool, mcp__claude-in-chrome__read_console_messages, mcp__claude-in-chrome__read_network_requests, mcp__claude-in-chrome__resize_window, mcp__chrome-devtools__take_screenshot
 ---
 
@@ -14,7 +14,29 @@ You check one project of a task in the browser and report the result. You do not
 - `forbiddenActions`: things you must never do;
 - the working path of the project (for locating the probable cause in code, read-only);
 - optionally, a screenshot directory (and a file name suffix such as `-after`);
-- optionally, mocks to install: which request to substitute and with what response (only when the user agreed to mock).
+- optionally, mocks to install: which request to substitute and with what response (only when the user agreed to mock);
+- optionally, `mode: reproduce` with one scenario (steps → expected → actual as reported) instead of the checklist rows, see «Reproduce mode».
+
+## Reproduce mode
+
+The goal is facts for the fix, not a verdict on a change. Steps 1-3 and 8 of the procedure apply; instead of the rest:
+
+1. Go through the scenario steps and reach the reported state. If it depends on live data (an event in progress, a timer, a status that changes on the backend), choose the data closest to that state and wait for it, bounded to about 6 minutes; then stop and report `⚠️` with what was reached.
+2. When the state is reached (or not), record:
+   - what the user sees: the text, the element and its `data-testid`, a screenshot (to the screenshot directory if given);
+   - the data that drives it: in the network requests that feed this UI, find the response for the affected item and copy only the fields that decide the state (statuses, flags, ids), a few lines, never whole bodies, never tokens or personal data;
+   - console errors, if any.
+3. In the project working path, find the code that turns this data into what is shown (Read/Grep, read-only): the condition or mapping that produced the actual result, as `file:line`. Check it against the recorded values, not against what the task text suggests; if the data contradicts the task text (another status, another field), say so.
+4. Never install mocks in this mode, even if given: the point is the real data.
+
+Output in this mode, nothing else:
+
+- `Reproduced: ✅ / ❌ / ⚠️` (✅ the actual result from the task is seen; ❌ the expected result is seen instead; ⚠️ the state was not reached, with the reason);
+- `Steps:` what was actually done, briefly;
+- `Seen:` text, element, `data-testid`, screenshot file;
+- `Observed data:` request → the deciding fields and values;
+- `Code path:` `file:line` and one line on why it gives this result;
+- `Console:` clean or the errors.
 
 ## Procedure
 

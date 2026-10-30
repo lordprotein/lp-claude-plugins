@@ -1,6 +1,6 @@
 {
   "name": "lp-task-loop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Command /lp-task-loop:run (autonomous loop: implement → verify → review + skeptic → fix, until no blocking findings or --max iterations; edits code only, never commits) with agents implementer, verifier, reviewer, skeptic",
   "author": {
     "name": "lordprotein"

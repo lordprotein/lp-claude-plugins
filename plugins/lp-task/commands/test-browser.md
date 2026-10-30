@@ -1,11 +1,18 @@
 ---
-description: Full browser check of the task via Chrome MCP — acceptance criteria + regression around the changes
-argument-hint: "[task key]"
+description: Browser run of the task via Chrome MCP — reproduce the bug before the fix («Обнаружение») or check the changes (acceptance + regression, «Проверка»)
+argument-hint: "[reproduce | verify] [task key]"
 ---
 
 # /lp-task:test-browser
 
 Arguments: `$ARGUMENTS`
+
+## Modes
+
+- **«Обнаружение»** — reproduce the bug of the task on the current code (usually before any fix) and record what really happens: the visible result, the data that drives it, the code path. Nothing in the repositories changes. Used before planning, so the plan starts from facts, not from a guess.
+- **«Проверка»** — check the changes: acceptance scenarios, negative and edge cases, regression around the diff.
+
+The mode is `reproduce` / `verify` from the arguments, or the one the caller (`do.md`) names. Otherwise it is decided in step 1.
 
 ## Step 0. Screenshots
 
@@ -20,8 +27,20 @@ Then read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, s
 1. `{key}` — from the arguments (via `tracker.keyRegex`); otherwise from the task of the current session; otherwise from the current branch of the working directory; otherwise the most recently modified `<stateDir>/*.json`. If it is still unknown — ask.
 2. Read `<stateDir>/<key>.json`: projects, paths, bases. If there is no state — ask which projects to check (AskUserQuestion, `multiSelect: true`, projects from the config).
 3. If the task was already read in this session (for example by `/lp-task:do`), use it from the context. Otherwise read it as in `do.md`, step 1 (Atlassian MCP, browser as a fallback): you need the scenarios and acceptance criteria. If neither works, rely on the summary from the state and the diff.
+4. Mode, if it is not given: if no project has changes against `origin/<base>` (`git -C <path> diff --stat --merge-base origin/<base>` and `status --short` are empty) — «Обнаружение» without asking. Otherwise ask (AskUserQuestion), header «Цель»: «Что делаем в браузере?» — «Проверить изменения» / «Обнаружить баг задачи».
 
-## Step 2. Checklist
+In the «Обнаружение» mode go to step 2R instead of step 2.
+
+## Step 2R. Reproduction scenario («Обнаружение»)
+
+From the task take the steps, the expected result and the actual result (if the task has no steps, build the shortest path to the described state from the description). For every project where the task's screen exists — one scenario: steps → expected → actual as reported. No checklist, no regression rows. Show the scenario in one short block and continue (steps 3 and 4, then step 5 with `mode: reproduce`).
+
+If the reported state depends on live data (an event in progress, a timer, a payment status) — say so, and pick in the browser the data closest to that state so the wait stays short.
+
+## Step 2. Checklist («Проверка»)
+
+If `<stateDir>/<key>.json` has `reproduction` — its scenario is the first row (`positive`, `P1`): the same steps, with the expected result now required, and the `observedData` given to the agent as the input to look for (the fix must handle exactly these values).
+
 
 For every project collect the changes: start with `git -C <path> diff --stat --merge-base origin/<base>` (committed and uncommitted together; add untracked new files from `status --short`), then read the diff `git -C <path> diff --merge-base origin/<base> -- . ':!*lock*' ':!*.snap'` (also skip generated and built files seen in the stat). Changes made in this session that are already in the context need not be read again. Build a checklist:
 
@@ -52,6 +71,8 @@ For every project of the task:
 
 Delegate the run to the `browser-tester` agent (`${CLAUDE_PLUGIN_ROOT}/agents/browser-tester.md`), one agent call per project, sequentially (projects share the browser login and tabs). Give it: the project label, the URL from step 4, the viewport (for `mobile` projects), the checklist rows of this project (with kind, priority and expected result), `browserTest.forbiddenActions`, the project working path and, if `screenshots` is «Да», the screenshot directory (and the `-after` suffix on re-runs after a fix). It runs P1 rows first and returns a compact table; screenshots stay out of this conversation.
 
+In the «Обнаружение» mode give it `mode: reproduce` and the scenario of step 2R instead of checklist rows. Never give it mocks in this mode: a mock would fake the very data being recorded. If local code of a project is not its base (another branch or uncommitted changes) — say so in one line before the run: the result describes that code, not the base.
+
 - If the agent answers `login required` — ask the user to log in in the opened Chrome window, wait, call it again.
 - If the agent answers `tools unavailable` (the subagent cannot reach the Chrome MCP) — do this step yourself in this session: go through the checklist for every project following `${CLAUDE_PLUGIN_ROOT}/references/browser-testing.md` (P1 first; positive, negative and edge rows): navigate, interact, take a snapshot/screenshot of the key states (with `screenshots` = «Да» save them to the screenshot directory as described in step 0), check the console and network after each scenario.
 
@@ -59,7 +80,7 @@ Forbidden: everything from `browserTest.forbiddenActions`; committing. If an ite
 
 ## Step 5a. Mocks for what could not be checked
 
-If some rows came back `⚠️` (no test data, a backend or third-party service is unavailable, the state cannot be reached, the action is forbidden, and so on) — never mock without asking. For every project with such rows ask (AskUserQuestion), header «Моки»: «Не удалось проверить в <label>: <rows with reasons>. Замокать?» — exactly 2 options: «Да» / «Нет».
+Only in the «Проверка» mode. If some rows came back `⚠️` (no test data, a backend or third-party service is unavailable, the state cannot be reached, the action is forbidden, and so on) — never mock without asking. For every project with such rows ask (AskUserQuestion), header «Моки»: «Не удалось проверить в <label>: <rows with reasons>. Замокать?» — exactly 2 options: «Да» / «Нет».
 
 - «Нет» — the rows stay `⚠️`.
 - «Да» — mock and check these rows again:
@@ -68,7 +89,13 @@ If some rows came back `⚠️` (no test data, a backend or third-party service 
   - a mock replaces the real request completely: nothing from `forbiddenActions` is really performed;
   - in the report mark such rows «✅ (мок)» / «❌ (мок)» and say what was mocked.
 
-## Step 6. Report
+## Step 6R. Reproduction report («Обнаружение»)
+
+A table: project → reproduced (✅ / ❌ / ⚠️) → actual result → observed data → code path (`file:line`). Under it, one line per project with the reason for ❌ / ⚠️ (the state was not reached, the data differs from the task, login, and so on). With `screenshots` = «Да» add the screenshot directory path.
+
+Write `reproduction` to `<stateDir>/<key>.json` (format in `shared.md`; create the state with the task key, title and projects if there is none yet). Then go to step 7 with the final message: «Баг воспроизведён в <projects>. Дальше — `/lp-task:do`» or «Баг не воспроизвёлся: <reason>. Причина в плане будет гипотезой». When called from `do.md`, skip the final message and return there.
+
+## Step 6. Report («Проверка»)
 
 A table: project → kind → item → ✅ / ❌ / ⚠️ → short comment. For every ❌ — steps, what was expected, what actually happens, environment (viewport, language, user state), a screenshot and the probable cause in the code (file:line); mark failures that also exist without the change as `pre-existing`.
 
@@ -78,4 +105,4 @@ If there are ❌ — ask (AskUserQuestion): «Исправить» / «Оста�
 
 ## Step 7. Finish
 
-Make sure no `lp-task mock` is left in the code (`git -C <path> grep -n "lp-task mock"`). Stop the dev servers you started (only yours). Say: «Проверка завершена. Для коммита — `/lp-task:commit`».
+Make sure no `lp-task mock` is left in the code (`git -C <path> grep -n "lp-task mock"`). Stop the dev servers you started (only yours), unless `do.md` called this step and will need them again for the check after the fix. In the «Проверка» mode say: «Проверка завершена. Для коммита — `/lp-task:commit`»; in the «Обнаружение» mode — the message of step 6R.

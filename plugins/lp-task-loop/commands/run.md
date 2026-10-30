@@ -17,6 +17,8 @@ Run autonomously: do not ask the user anything after step 0 unless an agent repo
 2. The repo root `R` = `git -C <repo> rev-parse --show-toplevel`. If it is not a git repository, say that the loop needs git to track changes and stop. Run every git command of the loop as `git -C "$R" ...` and pass `R` to every agent as the repo root.
 3. Find the project commands, cheaply: `package.json` scripts (lint, typecheck/tsc, test, build), `Makefile` targets, the repo `CLAUDE.md`, and `lint` of the matching project in `.claude/lp-task.json` (searched upward from `R`) if it exists. Do not run them here.
 4. Write 3 to 8 acceptance criteria: concrete and checkable (behaviour, edge cases the task implies, commands that must pass). No criteria that nobody can verify.
+   - If the task has an `Evidence:` block (real data observed when the bug was reproduced), at least one criterion is stated on exactly that data: «with <observed data> the code gives <expected result>». Criteria describe the observed input, not the input the plan assumes: the plan may be built on a wrong guess, and the loop must not confirm it.
+   - If the task is a bug fix without `Evidence:` (or it says the root cause is a hypothesis), remember it for the final report.
 5. Create a work dir: `W=$(mktemp -d "${TMPDIR:-/tmp}/lp-task-loop.XXXXXX")`. Take the baseline snapshot (see «Snapshots») as `base`.
 6. Show the criteria and commands in one short block and continue without waiting.
 
@@ -34,7 +36,7 @@ If the copy fails because the repository has no index yet, skip the `cp`. Rememb
 
 ### 1. Implement
 
-- N = 1: launch `lp-task-loop:implementer` with a name (`name: "implementer-<folder name of R>"`) and give it: the task, the criteria, the commands, the repo root.
+- N = 1: launch `lp-task-loop:implementer` with a name (`name: "implementer-<folder name of R>"`) and give it: the task, the criteria, the commands, the repo root, and the `Evidence:` block if there is one.
 - N ≥ 2: continue the same agent via SendMessage (load it via ToolSearch if deferred) and give it only the blocking findings of the previous iteration (and the skeptic's answers to its disputes, if any). It keeps its context, so do not repeat the task. If SendMessage is unavailable or the agent is gone, launch a new `lp-task-loop:implementer` with the task, the criteria and the findings.
 
 Then take snapshot `sN`. If `git diff <s(N-1) or base> <sN>` is empty and the implementer did not dispute every finding, record «no changes» for the progress check.
@@ -48,7 +50,7 @@ If it reports a new failure (not `pre-existing`), skip step 3: its failures are 
 ### 3. Review and skeptic (in parallel, one message with two Agent calls)
 
 - `lp-task-loop:reviewer`: the task, the repo root, the diff range to review: `<base> <sN>` when N = 1, otherwise only the delta `<s(N-1)> <sN>`, plus the previous blocking findings to confirm they are fixed.
-- `lp-task-loop:skeptic`: the task, the criteria, the repo root, the full range `<base> <sN>`, the implementer's report. When N ≥ 2: only the criteria that were FAIL in the last skeptic run plus every criterion touched by the delta files (list them), and the implementer's disputes with their arguments.
+- `lp-task-loop:skeptic`: the task, the criteria, the repo root, the full range `<base> <sN>`, the implementer's report, and the `Evidence:` block if there is one. When N ≥ 2: only the criteria that were FAIL in the last skeptic run plus every criterion touched by the delta files (list them), and the implementer's disputes with their arguments.
 
 ### 4. Decide
 
@@ -73,7 +75,7 @@ Before each new iteration print one progress line: `Итерация N: <k> бл
 
 In Russian, short:
 
-1. Status: `готово` / `лимит итераций` / `нет прогресса`, and the number of iterations.
+1. Status: `готово` / `лимит итераций` / `нет прогресса`, and the number of iterations. For a bug fix without `Evidence:` add the line «Причина не подтверждена воспроизведением: проверка шла по гипотезе плана» (not blocking).
 2. Criteria table: criterion → ✅ / ❌ (from the last skeptic run) → comment.
 3. Remaining blocking findings (if any), then non-blocking reviewer findings as one compact list.
 4. Verifier summary: commands and their status, pre-existing failures noted as such.
