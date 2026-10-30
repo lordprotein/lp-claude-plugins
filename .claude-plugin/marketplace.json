@@ -7,14 +7,24 @@
   },
   "plugins": [
     {
-      "name": "lp",
-      "description": "E2E tests, code explanation",
-      "source": "./plugins/lp"
+      "name": "lp-task",
+      "description": "Task flow across one or several repositories: tracker task, branches, implementation, browser check, commits, push and MR/PR",
+      "source": "./plugins/lp-task"
     },
     {
-      "name": "lp-task",
-      "description": "Task flow across one or several repositories: tracker task, branches, implementation, browser check, code review, unit tests, commits, push and MR/PR",
-      "source": "./plugins/lp-task"
+      "name": "lp-code-review",
+      "description": "Code review with a senior engineer lens, can publish findings as GitLab MR comments",
+      "source": "./plugins/lp-code-review"
+    },
+    {
+      "name": "lp-code-test",
+      "description": "Write and review unit and E2E tests",
+      "source": "./plugins/lp-code-test"
+    },
+    {
+      "name": "lp-explain-code",
+      "description": "Code explanation: changes, files, functions, flows",
+      "source": "./plugins/lp-explain-code"
     }
   ]
 }

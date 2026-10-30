@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: review
 description: "Expert code review with a senior engineer lens. Reviews git changes or targeted code (files, folders, features). Detects SOLID violations, security risks, and proposes actionable improvements."
 ---
 
@@ -15,7 +15,7 @@ Perform a structured code review with focus on SOLID, architecture, removal cand
 - **Targeted review mode** (with argument): Reviews specific code — a file path, folder, feature name, function, or keyword. The argument is interpreted flexibly: it can be a path (`src/auth/`), an entity name (`PaymentService`), or a description (`логика корзины`).
 - **MR mode** (argument is a merge request link, or `mr`): Reviews the diff of a GitLab merge request and can publish the findings as MR comments (step 9).
 
-Config: the first `.claude/lp-task.json` found from the current directory upward (else `~/.claude/lp-task.json`), deep-merged over `${CLAUDE_PLUGIN_ROOT}/config.default.json` (objects key by key, arrays and scalars replace). Without a config use the defaults. Used keys: `stateDir` (task state is `<stateDir>/<key>.json`, `~` expands to home), `review.postToMr` (`ask` default: offer to publish findings to a GitLab MR; `never`: do not offer), `review.minSeverity` (`critical` | `high` | `medium` default | `low`: lowest severity offered for publishing), `review.gitlab.mcpServer` (GitLab MCP server name, default `gitlab`; `glab` is the fallback).
+Config: the first `.claude/lp-task.json` found from the current directory upward (else `~/.claude/lp-task.json`), the same config file as the `lp-task` plugin. Without a config or a key use the defaults. Used keys: `stateDir` (default `~/.claude/lp-task/state`; task state is `<stateDir>/<key>.json`, `~` expands to home), `review.postToMr` (`ask` default: offer to publish findings to a GitLab MR; `never`: do not offer), `review.minSeverity` (`critical` | `high` | `medium` default | `low`: lowest severity offered for publishing), `review.gitlab.mcpServer` (GitLab MCP server name, default `gitlab`; `glab` is the fallback).
 
 ## Severity Levels
 

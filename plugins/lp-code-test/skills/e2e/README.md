@@ -4,7 +4,7 @@ A comprehensive **E2E testing** skill for AI agents. Focused exclusively on end-
 
 ## Installation
 
-Part of the `lp` plugin — see the root README of this repository.
+Part of the `lp-code-test` plugin — see the root README of this repository.
 
 ## Features
 
@@ -23,7 +23,7 @@ Part of the `lp` plugin — see the root README of this repository.
 After installation, run:
 
 ```
-/lp:code-test-e2e
+/lp-code-test:e2e
 ```
 
 ### Mode 1: Generate E2E Tests
@@ -76,7 +76,7 @@ The skill reviews existing E2E tests for quality issues:
 ## Structure
 
 ```
-code-test-e2e/
+e2e/
 ├── SKILL.md                              # Main skill definition
 ├── agents/
 │   └── agent.yaml                        # Agent interface config

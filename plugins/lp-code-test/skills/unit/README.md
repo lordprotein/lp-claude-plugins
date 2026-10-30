@@ -4,7 +4,7 @@ A comprehensive **unit testing** skill for AI agents. Focused exclusively on uni
 
 ## Installation
 
-Part of the `lp` plugin — see the root README of this repository.
+Part of the `lp-code-test` plugin — see the root README of this repository.
 
 ## Features
 
@@ -24,7 +24,7 @@ Part of the `lp` plugin — see the root README of this repository.
 After installation, run:
 
 ```
-/lp-task:test-unit
+/lp-code-test:unit
 ```
 
 ### Mode 1: Generate Tests
@@ -79,7 +79,7 @@ The "Fix existing tests" path of Review handles tests broken by code changes (us
 ## Structure
 
 ```
-test-unit/
+unit/
 ├── SKILL.md                           # Entry point: modes, severity, Detection Table
 ├── agents/
 │   └── agent.yaml                     # Agent interface config

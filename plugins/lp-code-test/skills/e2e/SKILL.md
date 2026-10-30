@@ -1,5 +1,5 @@
 ---
-name: code-test-e2e
+name: e2e
 description: "Generate or review E2E tests only: full user journeys through a real browser. Generates tests from feature analysis, reviews for antipatterns and flakiness. Not for unit or integration tests."
 ---
 

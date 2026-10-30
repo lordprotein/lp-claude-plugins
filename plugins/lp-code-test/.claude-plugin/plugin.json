@@ -1,0 +1,8 @@
+{
+  "name": "lp-code-test",
+  "version": "1.0.0",
+  "description": "Skills: /lp-code-test:unit (write and review unit tests) and /lp-code-test:e2e (write and review E2E tests)",
+  "author": {
+    "name": "lordprotein"
+  }
+}

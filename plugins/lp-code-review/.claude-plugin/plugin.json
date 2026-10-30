@@ -1,0 +1,8 @@
+{
+  "name": "lp-code-review",
+  "version": "1.0.0",
+  "description": "Skill: /lp-code-review:review (code review of git changes, files, features or a GitLab MR, can publish findings as MR comments)",
+  "author": {
+    "name": "lordprotein"
+  }
+}

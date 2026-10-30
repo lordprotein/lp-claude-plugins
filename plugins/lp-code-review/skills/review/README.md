@@ -16,7 +16,7 @@ A comprehensive code review skill for AI agents. Performs structured reviews wit
 After installation, simply run:
 
 ```
-/lp-task:code-review
+/lp-code-review:review
 ```
 
 The skill will automatically review your current git changes.
@@ -26,11 +26,11 @@ The skill will automatically review your current git changes.
 You can also pass an argument to review specific code instead of git changes:
 
 ```
-/lp-task:code-review src/auth/               # review all files in the auth folder
-/lp-task:code-review src/services/payment.ts  # review a specific file
-/lp-task:code-review auth                     # find and review everything related to auth
-/lp-task:code-review PaymentService           # find and review PaymentService code
-/lp-task:code-review логика корзины           # search and review cart logic by keywords
+/lp-code-review:review src/auth/              # review all files in the auth folder
+/lp-code-review:review src/services/payment.ts # review a specific file
+/lp-code-review:review auth                    # find and review everything related to auth
+/lp-code-review:review PaymentService          # find and review PaymentService code
+/lp-code-review:review логика корзины          # search and review cart logic by keywords
 ```
 
 The argument is interpreted flexibly — it can be a file path, folder, class/function name, or a description of the feature to review.
@@ -59,7 +59,7 @@ The argument is interpreted flexibly — it can be a file path, folder, class/fu
 ## Structure
 
 ```
-code-review/
+review/
 ├── SKILL.md                 # Main skill definition
 ├── agents/
 │   └── agent.yaml           # Agent interface config
