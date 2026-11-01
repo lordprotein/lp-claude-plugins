@@ -26,11 +26,11 @@ Take all templates, paths and the project list only from the merged config.
 - `mrMessage.header` — the value of `{header}` in the team MR message (e.g. a team mention).
 - `mrMessage.lines[]` — template of the team MR message, one element per line (see `references/mr-message.md`).
 - `mrMessage.link` — template of one MR link line in `{links}`.
-- `mrMessage.clipboard` — copy the MR message to the clipboard.
+- `mrMessage.clipboard` — copy the MR message to the clipboard after `push` (default `false`: it is only saved, the `lp-copy-bar` mod or `/lp-task:mr-copy` copies it).
 - `howToTest.header` — first line of the tester message before the title (e.g. a mention of the testers); empty by default.
 - `howToTest.maxCases` — at most this many test cases in the tester message (default 6; the cases still to check are never cut).
 - `howToTest.environment` — the «Стенд» line of the tester message (e.g. where the build is available); empty — no line.
-- `howToTest.clipboard` — copy the tester message to the clipboard (default `true`).
+- `howToTest.clipboard` — copy the tester message to the clipboard right away (default `false`: it is only saved, the `lp-copy-bar` mod or `/lp-task:how-to-test copy` copies it).
 - `stateDir` — where the task state is stored: `<stateDir>/<key>.json`.
 - `review.postToMr` — `ask` (default): after a review of a GitLab MR offer to publish the findings as MR comments; `never`: do not offer.
 - `review.minSeverity` — lowest severity offered for publishing: `critical`, `high`, `medium` (default) or `low`.

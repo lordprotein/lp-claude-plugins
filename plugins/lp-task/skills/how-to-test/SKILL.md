@@ -1,6 +1,6 @@
 ---
 name: how-to-test
-description: Build a short message for the testers (QA) of a task and copy it to the clipboard: what changed, where and in which states to check, the test cases already checked. Use when the user asks how to test the changes or what to give the testers («как тестировать», «для тестеров», «что отдать QA», «где проверить эти изменения», «how to test»); with «copy» or «скопируй ещё раз» copies the saved tester message again
+description: Build a short message for the testers (QA) of a task and save it for copying: what changed, where and in which states to check, the test cases already checked. Use when the user asks how to test the changes or what to give the testers («как тестировать», «для тестеров», «что отдать QA», «где проверить эти изменения», «how to test»); with «copy» or «скопируй ещё раз» copies the saved tester message again
 argument-hint: "[task key] [copy]"
 ---
 
@@ -101,4 +101,4 @@ The plain text keeps the same structure: sub-items indented by three spaces and 
 
 ## Save and copy
 
-Do not ask whether to copy (the `lp-copy-bar` mod shows a copy button for the saved message). Print the plain text in a code block, then save and copy by `${CLAUDE_PLUGIN_ROOT}/references/clipboard.md` with `kind` = `how-to-test` (copy only if `howToTest.clipboard` is `true`). Say in one line that the message is in the clipboard and pastes into a Jira comment or the work chat with formatting, that `/lp-task:how-to-test copy` copies it again, and that you will apply changes on request. If the user asks for changes, apply them, then print, save and copy again the same way.
+Do not ask whether to copy (the `lp-copy-bar` mod shows a copy button for the saved message). Print the plain text in a code block, then save by `${CLAUDE_PLUGIN_ROOT}/references/clipboard.md` with `kind` = `how-to-test`; copy only if `howToTest.clipboard` is `true`. Say in one line where to copy it with formatting for a Jira comment or the work chat (the button above the prompt from the `lp-copy-bar` mod, or `/lp-task:how-to-test copy`; or that it is already in the clipboard), and that you will apply changes on request. If the user asks for changes, apply them, then print and save again the same way.

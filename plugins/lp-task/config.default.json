@@ -18,13 +18,13 @@
     "header": "",
     "lines": ["{header}", "{mrTitle}", "", "{links}"],
     "link": "* {label}: {url}",
-    "clipboard": true
+    "clipboard": false
   },
   "howToTest": {
     "header": "",
     "maxCases": 6,
     "environment": "",
-    "clipboard": true
+    "clipboard": false
   },
   "stateDir": "~/.claude/lp-task/state",
   "review": {

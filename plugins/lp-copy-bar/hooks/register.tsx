@@ -4,7 +4,7 @@ import type { EngineInterface, Register } from 'claude-code'
 import type { Copy } from '../types'
 
 // Change the tag when the fields of Copy change: it declines what an earlier version stored.
-const copies = atom({ plugin: 'lp-copy-bar', key: 'copies' } as const, [], { shape: 'copies-1' })
+const copies = atom({ plugin: 'lp-copy-bar', key: 'copies' } as const, [], { shape: 'copies-2' })
 const isHidden = atom({ plugin: 'lp-copy-bar', key: 'isHidden' } as const, false)
 
 const STORE_KEY = 'recent'
@@ -14,6 +14,15 @@ const LABELS: Record<string, string> = { mr: 'MR', 'how-to-test': 'Тестер�
 const ARG = String.raw`(?:"([^"]+)"|'([^']+)'|(\S+))`
 const COPY_CALL = new RegExp(String.raw`osascript\s+-l\s+JavaScript\s+${ARG}\s+${ARG}\s+${ARG}`)
 
+const MESSAGE_FILE = /^(.*\/([^/]+)\/messages\/([\w-]+))\.(html|txt)$/
+
+/** A saved lp-task message file `<stateDir>/<key>/messages/<kind>.html` or `.txt`. */
+export const parseMessageFile = (path: string): Copy | null => {
+  const m = MESSAGE_FILE.exec(path)
+  if (!m) return null
+  return { key: m[2] ?? '', kind: m[3] ?? '', html: `${m[1]}.html`, txt: `${m[1]}.txt` }
+}
+
 /** The lp-task copy call in a Bash command: `osascript -l JavaScript <copy-rich.js> <…/<key>/messages/<kind>.html> <….txt>`. */
 export const parseCopy = (command: string): Copy | null => {
   const m = COPY_CALL.exec(command)
@@ -22,21 +31,34 @@ export const parseCopy = (command: string): Copy | null => {
   const script = pick(1)
   const html = pick(4)
   const txt = pick(7)
-  if (!script.endsWith('copy-rich.js')) return null
-  const parts = /\/([^/]+)\/messages\/([\w-]+)\.html$/.exec(html)
-  if (!parts || !txt.endsWith('.txt')) return null
-  return { key: parts[1] ?? '', kind: parts[2] ?? '', html, txt, script }
+  if (!script.endsWith('copy-rich.js') || !txt.endsWith('.txt') || !html.endsWith('.html')) return null
+  return parseMessageFile(html)
 }
+
+// Puts the HTML and the plain text on the macOS pasteboard (the same as lp-task's copy-rich.js, so no lp-task path is needed).
+const COPY_RICH = [
+  "ObjC.import('AppKit')",
+  'function run(argv) {',
+  '  const read = p => $.NSString.stringWithContentsOfFileEncodingError($(p), $.NSUTF8StringEncoding, null)',
+  '  const html = read(argv[0]), text = read(argv[1])',
+  "  if (!html || html.isNil() || !text || text.isNil()) throw new Error('cannot read the message files')",
+  '  const pb = $.NSPasteboard.generalPasteboard',
+  '  pb.clearContents',
+  "  pb.setStringForType(html, 'public.html')",
+  "  pb.setStringForType(text, 'public.utf8-plain-text')",
+  "  return 'copied'",
+  '}',
+].join('\n')
 
 const label = (kind: string) => LABELS[kind] ?? kind
 
 const remember = (list: readonly Copy[], copy: Copy): Copy[] =>
   [...list.filter(c => !(c.key === copy.key && c.kind === copy.kind)), copy].slice(-MAX_KEPT)
 
-/** Copies again with formatting through the same script; plain text through the terminal if that fails. */
+/** Copies with formatting; plain text through the terminal if that fails. */
 const copyAgain = async ($: EngineInterface, copy: Copy, surface?: Parameters<EngineInterface['ui']['copy']>[0]['surface']) => {
   try {
-    const ran = await $.process.run(['osascript', '-l', 'JavaScript', copy.script, copy.html, copy.txt])
+    const ran = await $.process.run(['osascript', '-l', 'JavaScript', '-e', COPY_RICH, copy.html, copy.txt])
     if (ran.exitCode === 0) {
       $.ui.toast(`${copy.key}: «${label(copy.kind)}» скопировано`)
       return true
@@ -55,6 +77,14 @@ const copyAgain = async ($: EngineInterface, copy: Copy, surface?: Parameters<En
   }
 }
 
+/** Remembers a message for the buttons (this session) and for /copy-last (across sessions). */
+const keep = async ($: EngineInterface, copy: Copy) => {
+  await update($, copies, list => remember(list, copy))
+  await update($, isHidden, () => false)
+  const kept = await $.store.get(STORE_KEY)
+  await $.store.set(STORE_KEY, remember(Array.isArray(kept) ? (kept as Copy[]) : [], copy))
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
@@ -64,15 +94,19 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // lp-task copied a message.
   on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
     const ran = await next(e)
     const copy = parseCopy(e.command)
-    if (copy && ran.deny === undefined && ran.isError !== true) {
-      await update($, copies, list => remember(list, copy))
-      await update($, isHidden, () => false)
-      const kept = await $.store.get(STORE_KEY)
-      await $.store.set(STORE_KEY, remember(Array.isArray(kept) ? (kept as Copy[]) : [], copy))
-    }
+    if (copy && ran.deny === undefined && ran.isError !== true) await keep($, copy)
+    return ran
+  }).catch(($, e, next) => next(e))
+
+  // lp-task saved a message without copying it: the button is the way to copy it.
+  on('tool.call', { tool: 'Write' }, async ($, e, next) => {
+    const ran = await next(e)
+    const copy = parseMessageFile(e.file_path)
+    if (copy && ran.deny === undefined && ran.isError !== true) await keep($, copy)
     return ran
   }).catch(($, e, next) => next(e))
 

@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { parseCopy } from './register'
+import { parseCopy, parseMessageFile } from './register'
 
 const BAND = {
   plugin: 'lp-copy-bar',
@@ -24,10 +24,35 @@ test('parses the lp-task copy call', () => {
     kind: 'how-to-test',
     html: '/state/ACME-1/messages/how-to-test.html',
     txt: '/state/ACME-1/messages/how-to-test.txt',
-    script: '/plugins/lp-task/scripts/copy-rich.js',
   })
   expect(parseCopy('osascript -l JavaScript other.js a.html b.txt')).toBe(null)
   expect(parseCopy('git status')).toBe(null)
+})
+
+test('parses a saved message file', () => {
+  const copy = { key: 'ACME-1', kind: 'mr', html: '/state/ACME-1/messages/mr.html', txt: '/state/ACME-1/messages/mr.txt' }
+  expect(parseMessageFile('/state/ACME-1/messages/mr.html')).toEqual(copy)
+  expect(parseMessageFile('/state/ACME-1/messages/mr.txt')).toEqual(copy)
+  expect(parseMessageFile('/state/ACME-1/notes/mr.html')).toBe(null)
+  expect(parseMessageFile('/src/index.html')).toBe(null)
+})
+
+test('a saved message without a copy puts a button above the prompt', async ($, on) => {
+  const ran: string[][] = []
+  on('tool.call', () => ({ result: {} }))
+  on('process.run', (_, e) => {
+    ran.push([...e.argv])
+    return { value: { exitCode: 0, stdout: '', stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
+  })
+  on('ui.toast', () => ({ value: undefined }))
+
+  await $.tool.call({ tool: 'Write', file_path: '/state/ACME-2/messages/mr.html', content: '<b>MR</b>' })
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await ui.find({ type: 'Button', key: 'copy:ACME-2:mr' }))?.props.label).toBe('MR')
+  await ui.press({ key: 'copy:ACME-2:mr' })
+  expect(ran.at(-1)?.slice(-2)).toEqual(['/state/ACME-2/messages/mr.html', '/state/ACME-2/messages/mr.txt'])
+  await ui.unmount()
 })
 
 test('a copy call puts a button above the prompt, and the button copies again', async ($, on) => {
@@ -46,14 +71,9 @@ test('a copy call puts a button above the prompt, and the button copies again', 
   expect(button?.props.label).toBe('Тестерам')
 
   await ui.press({ key: 'copy:ACME-1:how-to-test' })
-  expect(ran.at(-1)).toEqual([
-    'osascript',
-    '-l',
-    'JavaScript',
-    '/plugins/lp-task/scripts/copy-rich.js',
-    '/state/ACME-1/messages/how-to-test.html',
-    '/state/ACME-1/messages/how-to-test.txt',
-  ])
+  const argv = ran.at(-1) ?? []
+  expect(argv.slice(0, 4)).toEqual(['osascript', '-l', 'JavaScript', '-e'])
+  expect(argv.slice(-2)).toEqual(['/state/ACME-1/messages/how-to-test.html', '/state/ACME-1/messages/how-to-test.txt'])
   await ui.unmount()
 })
 

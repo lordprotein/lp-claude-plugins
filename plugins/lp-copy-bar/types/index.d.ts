@@ -1,10 +1,9 @@
-/** One message lp-task copied: its files and the script that copied it. */
+/** One message lp-task saved or copied: its files. */
 export type Copy = {
   key: string
   kind: string
   html: string
   txt: string
-  script: string
 }
 
 declare module 'claude-code' {
