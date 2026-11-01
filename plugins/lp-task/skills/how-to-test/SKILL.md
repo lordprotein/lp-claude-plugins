@@ -1,7 +1,7 @@
 ---
 name: how-to-test
-description: Build a short message for the testers (QA) of a task and save it for copying: what changed, where and in which states to check, the test cases already checked. Use when the user asks how to test the changes or what to give the testers («как тестировать», «для тестеров», «что отдать QA», «где проверить эти изменения», «how to test»); with «copy» or «скопируй ещё раз» copies the saved tester message again
-argument-hint: "[task key] [copy]"
+description: Build a short message for the testers (QA) of a task and save it for copying: what changed, where and in which states to check, the test cases already checked. Use when the user asks how to test the changes or what to give the testers («как тестировать», «для тестеров», «что отдать QA», «где проверить эти изменения», «how to test»)
+argument-hint: "[task key]"
 ---
 
 # /lp-task:how-to-test
@@ -15,10 +15,6 @@ Read-only for the repositories: nothing is changed, committed or pushed. The mes
 ## Which task
 
 As in `shared.md` «Which task». Filter for step 4: state files with at least one project that has `commit`.
-
-## Copy again
-
-If the arguments have `copy`: take `<stateDir>/<key>/messages/how-to-test.html` and `.txt`. If they exist, copy them by `${CLAUDE_PLUGIN_ROOT}/references/clipboard.md` (step 2), print the plain text and stop. If not, say that there is no saved message yet and continue with «Collect» below.
 
 ## Collect
 
@@ -101,4 +97,4 @@ The plain text keeps the same structure: sub-items indented by three spaces and 
 
 ## Save and copy
 
-Do not ask whether to copy (the `lp-copy-bar` mod shows a copy button for the saved message). Print the plain text in a code block, then save by `${CLAUDE_PLUGIN_ROOT}/references/clipboard.md` with `kind` = `how-to-test`; copy only if `howToTest.clipboard` is `true`. Say in one line where to copy it with formatting for a Jira comment or the work chat (the button above the prompt from the `lp-copy-bar` mod, or `/lp-task:how-to-test copy`; or that it is already in the clipboard), and that you will apply changes on request. If the user asks for changes, apply them, then print and save again the same way.
+Do not ask whether to copy (the `lp-copy-bar` mod shows a copy button for the saved message). Print the plain text in a code block, then save by `${CLAUDE_PLUGIN_ROOT}/references/clipboard.md` with `kind` = `how-to-test`; copy only if `howToTest.clipboard` is `true`. Say in one line where to copy it with formatting for a Jira comment or the work chat (the button above the prompt from the `lp-copy-bar` mod, or that it is already in the clipboard), and that you will apply changes on request. If the user asks for changes, apply them, then print and save again the same way.
