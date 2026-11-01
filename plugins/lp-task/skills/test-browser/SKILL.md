@@ -85,7 +85,7 @@ Follow `${CLAUDE_PLUGIN_ROOT}/references/reproduce.md` «Report», then go to st
 
 A table: project → kind → item → ✅ / ❌ / ⚠️ → short comment. For every ❌ — steps, what was expected, what actually happens, environment (viewport, language, user state), a screenshot and the probable cause in the code (file:line); mark failures that also exist without the change as `pre-existing`.
 
-Write the rows to `checks` in `<stateDir>/<key>.json` (format in `shared.md`): the whole checklist of this run with `result` `pass` (✅), `fail` (❌) or `unchecked` (⚠️) and `mock`; a re-run after a fix updates only its rows.
+Write the rows to `checks` in `<stateDir>/<key>.json` (format in `shared.md`): the whole checklist of this run with `result` `pass` (✅), `fail` (❌) or `unchecked` (⚠️) and `mock` (`null`, or what was substituted and why, from step 5a); a re-run after a fix updates only its rows.
 
 Under the table add a coverage line (counts per kind: positive / negative / edge / state / regression, and what was deliberately not covered) and, if the agent reported any, the «Дополнительные наблюдения» found outside the checklist. With `screenshots` = «Да» add the screenshot directory path.
 

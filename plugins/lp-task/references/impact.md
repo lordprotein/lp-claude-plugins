@@ -12,7 +12,13 @@ For every project of the task:
 
 For every changed module (component, hook, selector, store slice, API call, util, style, locale key):
 1. Find who uses it: `git -C <path> grep -n` by its import path and exported names. Repeat upward until you reach an entry the user sees: a page, a route, a screen, a modal, a widget placed on several pages. Stop after 3 levels or when the users are many; then name the widget and say «на многих страницах».
-2. Name each place the way a tester finds it: the page or screen and the visible part (`страница корзины, виджет в шапке`), with a route or URL if the router config gives one. Not file paths.
+2. Describe each place as an address a tester can follow without asking, not as a file path. Its parts, in this order; leave out a part you could not establish, never invent it:
+   - **page:** the route from the router config (`git grep` by the page component and by the route path) and an example URL. A URL that was really used in a check (`checks[].where`, `reproduction.where` in the state) wins over a derived one;
+   - **how to get there:** the click path with the visible names of menu items, tabs and buttons (`Каталог → Электроника → любой товар`). Take the names from the translations of the project's main language by the locale key the component uses, never the key itself;
+   - **precondition:** what to do so the element appears, if it is not visible at once (add an item to the cart, log in, select 2 or more items, open a live event);
+   - **what to look at:** the element, its visible text or look, and where it is on the screen (`справа в панели корзины, строка товара: серая цена и подпись «…»`).
+
+   When several places share one widget (the same panel on several pages), give one address with the shortest path and add «то же на …» for the others.
 
 Also note, when the diff has them:
 - locales: which keys and languages changed, where the texts are shown;

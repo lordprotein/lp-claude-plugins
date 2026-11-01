@@ -22,7 +22,8 @@
   },
   "howToTest": {
     "header": "",
-    "maxCases": 8,
+    "maxCases": 6,
+    "environment": "",
     "clipboard": true
   },
   "stateDir": "~/.claude/lp-task/state",
