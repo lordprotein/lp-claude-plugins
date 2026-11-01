@@ -37,6 +37,7 @@ Merge and deduplicate (same file and same problem → one item, keep the stronge
 - **N = max**: stop with status «лимит итераций».
 - **No progress**: the blocking findings match those of iteration N-1 (same file and essence) or step 1 recorded «no changes» → stop with status «нет прогресса».
 - **A dispute**: if the implementer argued that a finding is wrong, do not just resend it. Pass the argument to the skeptic in the next run; drop the finding if the skeptic accepts the argument.
+- **Checkpoint** (at most once per loop): go on by yourself only on clear progress: only verifier failures; after iteration 1 the skeptic passes at least half of the criteria with at most 3 blocking findings; later, fewer blocking findings or fewer failed criteria than in iteration N-1. Otherwise show a 3 to 4 line summary and ask as in «Checkpoint» of `SKILL.md` (continue or stop). Tokens cannot be measured here, so the `--budget` limit does not apply in the manual loop: say so in the final report.
 - Otherwise go to iteration N+1 with the blocking findings as a list: `severity | file:line | problem | evidence`.
 
 Before each new iteration print one progress line: `Итерация N: <k> блокирующих (<sources>) → доработка`.

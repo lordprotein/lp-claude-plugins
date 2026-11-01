@@ -11,9 +11,18 @@ export const meta = {
 }
 
 // args (from skills/run/SKILL.md step 0):
-// { repo, workDir, task, criteria: [string], commands: {lint, typecheck, test, build}, evidence, base, max }
+// { repo, workDir, task, criteria: [string], commands: {lint, typecheck, test, build}, evidence, base, max, budget }
+// After a checkpoint the skill resumes this run with the same args plus
+// { confirmed: true, spentBefore: <tokens of the first run>, resumeAt: <its last iteration> }.
 const A = args || {}
 const MAX = Math.max(1, Number(A.max) || 3)
+// Output tokens of the whole loop. budget.spent() is per turn, cached agents of a resumed run cost nothing.
+const BUDGET = Math.max(1, Number(A.budget) || 150000)
+const START = budget.spent()
+const used = () => (Number(A.spentBefore) || 0) + budget.spent() - START
+const k = (t) => `${Math.round(t / 1000)}k`
+// Iterations up to resumeAt were already checked on the first run, their guards are skipped on replay.
+const live = (n) => n > (Number(A.resumeAt) || 0)
 const CRITERIA = A.criteria || []
 const commands = Object.entries(A.commands || {})
   .filter(([, v]) => v)
@@ -104,9 +113,19 @@ let notDone = []
 let status = 'лимит итераций'
 let iterations = 0
 let blocker = ''
+let checkpointReason = ''
+let prevFails = null
+const critState = {}
+const failCount = (sk) => (sk.criteria || []).filter((c) => c.verdict === 'FAIL').length
+const remember = (sk) => (sk.criteria || []).forEach((c) => { critState[c.criterion] = c.verdict })
+const overBudget = (n) => live(n) && used() >= BUDGET
 
 for (let n = 1; n <= MAX; n++) {
+  // Hard limit: do not start an iteration that would not fit by the average cost of the previous ones.
+  if (n > 1 && live(n) && used() + used() / (n - 1) > BUDGET) { status = 'лимит токенов'; break }
+  if (overBudget(n)) { status = 'лимит токенов'; break }
   iterations = n
+  let skRan = false
 
   // 1. Implement: a fresh implementer every iteration, given the current state and the findings.
   const implPrompt = n === 1
@@ -132,6 +151,8 @@ for (let n = 1; n <= MAX; n++) {
     .filter((r) => r.status === 'fail' && !r.preExisting)
     .map((r) => ({ severity: 'high', file: r.error.split(' ')[0] || r.command, problem: `${r.command} fails`, evidence: r.error, source: 'verifier' }))
 
+  if (!blocking.length && overBudget(n)) { status = 'лимит токенов'; prevSnap = snap; prevBlocking = blocking; break }
+
   if (!blocking.length) {
     // 3a. Skeptic: does the change do the task?
     const full = skepticCriteria.length === CRITERIA.length
@@ -142,8 +163,12 @@ for (let n = 1; n <= MAX; n++) {
     )
     if (!sk) { status = 'ошибка агента'; break }
     lastSkeptic = sk
+    skRan = true
+    remember(sk)
     disputes = sk.disputes || []
     blocking = fromSkeptic(sk)
+
+    if (!blocking.length && overBudget(n)) { status = 'лимит токенов'; prevSnap = snap; prevBlocking = []; break }
 
     // 3b. Reviewer: code quality, only when the skeptic found nothing.
     if (!blocking.length) {
@@ -161,6 +186,7 @@ for (let n = 1; n <= MAX; n++) {
       nonBlocking = fs.filter((f) => f.severity === 'medium' || f.severity === 'low')
 
       // Final full skeptic pass if the last one did not cover every criterion.
+      if (!blocking.length && !full && overBudget(n)) { status = 'лимит токенов'; prevSnap = snap; prevBlocking = []; break }
       if (!blocking.length && !full) {
         const fin = await agent(
           `Repo root: ${A.repo}\n\nTask:\n${A.task}\n\nCriteria to check (final pass, all of them):\n${criteriaList(CRITERIA)}\n\nDiff range: ${A.base} ${snap}.${evidence}`,
@@ -168,6 +194,7 @@ for (let n = 1; n <= MAX; n++) {
         )
         if (fin) {
           lastSkeptic = fin
+          remember(fin)
           blocking = fromSkeptic(fin)
         }
       }
@@ -182,7 +209,20 @@ for (let n = 1; n <= MAX; n++) {
   if (n === MAX) { prevBlocking = blocking; status = 'лимит итераций'; break }
   if (noChanges || same) { prevBlocking = blocking; status = 'нет прогресса'; break }
 
-  log(`Итерация ${n}: ${blocking.length} блокирующих (${[...new Set(blocking.map((b) => b.source))].join(', ')}) → доработка`)
+  // Soft checkpoint, at most once per loop: continue alone only on clear progress and under half of the budget.
+  const fails = skRan ? failCount(lastSkeptic) : null
+  if (!A.confirmed) {
+    const onlyVerifier = blocking.every((b) => b.source === 'verifier')
+    const passed = skRan ? (lastSkeptic.criteria || []).length - fails : 0
+    const clear = onlyVerifier || (n === 1
+      ? skRan && passed * 2 >= (lastSkeptic.criteria || []).length && blocking.length <= 3
+      : blocking.length < prevBlocking.length || (fails !== null && prevFails !== null && fails < prevFails))
+    checkpointReason = !clear ? 'прогресс неясен' : used() * 2 >= BUDGET ? 'потрачено больше половины лимита токенов' : ''
+    if (checkpointReason) { prevBlocking = blocking; status = 'чекпоинт'; break }
+  }
+  if (fails !== null) prevFails = fails
+
+  log(`Итерация ${n}: ${blocking.length} блокирующих (${[...new Set(blocking.map((b) => b.source))].join(', ')}) → доработка · ~${k(used())}/${k(BUDGET)} токенов`)
   prevBlocking = blocking
   // The next skeptic run rechecks the failed criteria; a final full pass runs before «готово».
   skepticCriteria = lastSkeptic ? CRITERIA.filter((c) => (lastSkeptic.criteria || []).some((r) => r.criterion === c && r.verdict === 'FAIL')) : CRITERIA
@@ -193,6 +233,11 @@ return {
   status,
   iterations,
   blocker,
+  checkpointReason,
+  tokens: used(),
+  budget: BUDGET,
+  criteriaPassed: CRITERIA.filter((c) => critState[c] === 'PASS').length,
+  criteriaTotal: CRITERIA.length,
   lastSnapshot: prevSnap,
   criteria: lastSkeptic ? lastSkeptic.criteria : [],
   blocking: prevBlocking,

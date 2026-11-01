@@ -1,7 +1,7 @@
 {
   "name": "lp-task-loop",
-  "version": "1.2.0",
-  "description": "Skill /lp-task-loop:run (autonomous loop as a workflow: implement → verify → skeptic → review → fix, until no blocking findings or --max iterations; edits code only, never commits, enforced by a hook) with agents implementer, verifier, skeptic, reviewer",
+  "version": "1.3.0",
+  "description": "Skill /lp-task-loop:run (autonomous loop as a workflow: implement → verify → skeptic → review → fix, until no blocking findings, --max iterations or the --budget of output tokens, with one checkpoint question when progress is unclear; edits code only, never commits, enforced by a hook) with agents implementer, verifier, skeptic, reviewer",
   "author": {
     "name": "lordprotein"
   }
