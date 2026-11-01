@@ -53,7 +53,7 @@ Plain text, empty blocks are not printed, the order is fixed:
 
 ```
 {howToTest.header}
-🧪 Как тестировать: {key} {title}
+🧪 Для тестирования
 Задача: {issueUrl} · MR: {label} {url}, {label} {url}
 Стенд: {howToTest.environment}
 
@@ -99,8 +99,6 @@ HTML from the same lines by the HTML rules of `${CLAUDE_PLUGIN_ROOT}/references/
 
 The plain text keeps the same structure: sub-items indented by three spaces and starting with `• `.
 
-## Confirm and copy
+## Save and copy
 
-Print the plain text in a code block, then ask (AskUserQuestion), header «Тестерам»: «Скопировать сообщение для тестеров?» — «Да» / «Поправить». On «Поправить», or own text via Other, apply the changes and ask again.
-
-On «Да»: save and copy by `${CLAUDE_PLUGIN_ROOT}/references/clipboard.md` with `kind` = `how-to-test` (copy only if `howToTest.clipboard` is `true`). Say in one line that the message is in the clipboard and pastes into a Jira comment or the work chat with formatting, and that `/lp-task:how-to-test copy` copies it again.
+Do not ask whether to copy (the `lp-copy-bar` mod shows a copy button for the saved message). Print the plain text in a code block, then save and copy by `${CLAUDE_PLUGIN_ROOT}/references/clipboard.md` with `kind` = `how-to-test` (copy only if `howToTest.clipboard` is `true`). Say in one line that the message is in the clipboard and pastes into a Jira comment or the work chat with formatting, that `/lp-task:how-to-test copy` copies it again, and that you will apply changes on request. If the user asks for changes, apply them, then print, save and copy again the same way.

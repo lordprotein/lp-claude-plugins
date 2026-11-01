@@ -7,7 +7,7 @@ Read from `skills/do/SKILL.md` step 6 when the user chose «Автономный
   - the task summary and description retold in 2-5 lines;
   - the approved plan part for this project, with its «Проверка» lines: the loop builds its acceptance criteria from them;
   - the CLAUDE.md, `planNotes` and `notes` rules that apply;
-  - an `Evidence:` block from `reproduction` (steps, observed data, expected result); if there was no reproduction, omit it and add «Root cause: hypothesis, not reproduced»;
+  - an `Evidence:` block from `reproduction` (steps, observed data, expected result); if there was no reproduction, omit it and add «Root cause: read from code (reproduction skipped: <reason>)» when step 4a found it not needed, otherwise «Root cause: hypothesis, not reproduced»;
   - the constraint «Do not write new unit tests and do not change existing ones: list the tests your change breaks or makes obsolete in Not done».
 
   Follow it to its final report, then write its criteria table to `criteria` in the state (`{ criterion, result: "pass" | "fail" }`, `shared.md`) and continue in `do`.
