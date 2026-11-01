@@ -55,8 +55,8 @@ A root cause read from the code alone is a guess: the real data may not take the
 The step applies when the task is a bug: the tracker type is Bug, or the description has steps / actual result / expected result. Otherwise skip it.
 
 1. If `<stateDir>/<key>.json` already has `reproduction` (the user ran `/lp-task:test-browser reproduce` before) — show it in one block and go to step 5.
-2. Ask (AskUserQuestion), header «Репро»: «Воспроизвести баг в браузере до плана?» — «Да, со скриншотами» / «Да, без скриншотов» / «Нет». Remember the screenshots answer for the whole session: test-browser gets it as `--screenshots yes|no` and does not ask again.
-3. «Да…» → follow `${CLAUDE_PLUGIN_ROOT}/skills/test-browser/SKILL.md` in the «Обнаружение» mode with `--screenshots` for the selected projects where the task's screen exists (one run per project, sequentially). Nothing in the repositories changes. It writes `reproduction` to the state.
+2. Ask (AskUserQuestion), header «Репро»: «Воспроизвести баг в браузере до плана?» — «Да» / «Нет». Never ask about screenshots: test-browser gets `--screenshots yes` only if the user asked for screenshots in this session, otherwise `--screenshots no`.
+3. «Да» → follow `${CLAUDE_PLUGIN_ROOT}/skills/test-browser/SKILL.md` in the «Обнаружение» mode with `--screenshots` for the selected projects where the task's screen exists (one run for all of them, the projects are checked at the same time). Nothing in the repositories changes. It writes `reproduction` to the state.
 4. «Нет», or the bug did not reproduce anywhere → say in one line that the root cause stays a hypothesis; from here on the plan calls it «гипотеза».
 
 ## Step 5. Preflight
@@ -91,9 +91,9 @@ Remember the answers and write the state (projects, base, branch).
 
 ## Step 7. Waiting
 
-Do not commit. Show `git diff --stat` for every project, then ask (AskUserQuestion), header «Браузер»: «Проверить задачу в браузере через Chrome MCP?» — «Да, со скриншотами» / «Да, без скриншотов» / «Нет» (if the screenshots answer is already known from step 4a — only «Да» / «Нет»).
+Do not commit. Show `git diff --stat` for every project, then ask (AskUserQuestion), header «Браузер»: «Проверить задачу в браузере через Chrome MCP?» — «Да» / «Нет» (screenshots as in step 4a, never asked).
 
-- «Да…» → follow the instructions from `${CLAUDE_PLUGIN_ROOT}/skills/test-browser/SKILL.md` in the «Проверка» mode with `--screenshots` (the reproduction scenario, if any, is its first row), then say the final message below.
+- «Да» → follow the instructions from `${CLAUDE_PLUGIN_ROOT}/skills/test-browser/SKILL.md` in the «Проверка» mode with `--screenshots` (the reproduction scenario, if any, is its first row), then say the final message below.
 - «Нет» → say the final message below.
 
 Final message: «Изменения готовы. Для коммита — `/lp-task:commit` (или напишите „закоммить“). Проверка в браузере — `/lp-task:test-browser`» — and stop.

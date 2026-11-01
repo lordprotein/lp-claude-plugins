@@ -17,9 +17,9 @@ The mode is `reproduce` / `verify` from the arguments, or the one the caller (`d
 
 ## Step 0. Screenshots
 
-If the arguments have `--screenshots yes|no` (the caller, e.g. `do`, already asked), take it as `screenshots` («Да» / «Нет») and do not ask. Otherwise, before anything else (before reading files or the task), ask (AskUserQuestion), header «Скриншоты»: «Делать скриншоты по ходу проверки?» — «Да» / «Нет». Remember the answer as `screenshots`.
+Never ask about screenshots. `screenshots` is «Да» only if the arguments have `--screenshots yes` or the user asked for screenshots in the request that started the run («со скриншотами», «сделай скрины»); otherwise «Нет».
 
-With «Да» screenshots are saved as files in `<stateDir>/<key>/screenshots/` (create it once `{key}` is known): the key state of every checked row, named `<project>-<row number>-<short slug>.png`, and on re-runs after a fix `<project>-<row number>-<short slug>-after.png`, so the user can compare what changed. With «Нет» only the ❌ rows get a screenshot, as before.
+With «Да» screenshots are saved as files in `<stateDir>/<key>/screenshots/` (create it once `{key}` is known): the key state of every checked row, named `<project>-<row number>-<short slug>.png`, and on re-runs after a fix `<project>-<row number>-<short slug>-after.png`, so the user can compare what changed. With «Нет» a screenshot is taken only when the check needs it (a ❌ row, or a row about how something looks), saved to the same directory.
 
 Then read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
 
@@ -56,26 +56,32 @@ Load the Chrome MCP tools via ToolSearch (Claude in Chrome: navigation, click, p
 
 ## Step 4. Environment
 
-For every project of the task:
-1. Ask (AskUserQuestion), header «Окружение»: «Где проверять <label>?» — «Локальный dev-сервер (Recommended)» / «Указать URL стенда».
-2. Local: check whether the dev server of this project is already running (by the process / port). If the port is taken by a server of another checkout or branch (`lsof -i tcp:<port>` shows a process whose working directory is not `<path>`), ask (AskUserQuestion): «Освободить порт <port>» / «Проверять на этом сервере» / «Отменить»; on «Освободить» run `lp-stop-port <port>` (a plugin command on the Bash PATH; never `kill`). If no server runs — start the project's `dev` command in `<path>` in the background (`run_in_background`), wait until the output reports that the server is ready and take the local URL from the output. Remember that you started it.
-3. For projects with `mobile: true` use a mobile viewport (`browserTest.mobileViewport`, resize / device emulation).
-4. If authorization is needed — ask the user to log in in the opened Chrome window and wait. Never type credentials yourself.
+All projects are prepared together, so that step 5 can run them at the same time:
+1. Ask (AskUserQuestion, one question per project in one call), header «Окружение»: «Где проверять <label>?» — «Локальный dev-сервер (Recommended)» / «Указать URL стенда».
+2. Local: check whether the dev server of each project is already running (by the process / port). If the port is taken by a server of another checkout or branch (`lsof -i tcp:<port>` shows a process whose working directory is not `<path>`, and it is not another project of this task), ask (AskUserQuestion): «Освободить порт <port>» / «Проверять на этом сервере» / «Отменить»; on «Освободить» run `lp-stop-port <port>` (a plugin command on the Bash PATH; never `kill`). Start the `dev` command of every project without a running server in `<path>` in the background (`run_in_background`), all of them before waiting, then wait until each output reports that the server is ready and take the local URL from it. Remember which servers you started.
+3. Two projects of the task on one port (the second server fails with «address in use» or a busy-port prompt): start it again on a free port (`PORT=<free>` in the environment, or `--port <free>` after the command's `--` if the dev tool takes it) and take the URL from the output. If it still cannot run beside the first one, that project goes to a later stage of step 5: after the first stage, stop the first server (only yours) and start this one.
+4. For projects with `mobile: true` use a mobile viewport (`browserTest.mobileViewport`, resize / device emulation).
+5. If authorization is needed — ask the user to log in once in the opened Chrome window and wait, before step 5. Never type credentials yourself.
 
 ## Step 5. Run
 
-Delegate the run to the `browser-tester` agent (`${CLAUDE_PLUGIN_ROOT}/agents/browser-tester.md`), one agent call per project, sequentially (projects share the browser login and tabs). Give it: `tool` from step 3, the project label, the URL from step 4, the viewport (for `mobile` projects), the checklist rows of this project (with kind, priority and expected result), `browserTest.forbiddenActions`, the project working path and, if `screenshots` is «Да», the screenshot directory (and the `-after` suffix on re-runs after a fix). It runs P1 rows first and returns a compact table; screenshots stay out of this conversation.
+Delegate the run to the `browser-tester` agent (`${CLAUDE_PLUGIN_ROOT}/agents/browser-tester.md`), one agent per project, all projects of a stage at the same time: several Agent calls in one message. Each agent works only in its own new tab. Stages:
+- with `tool` `chrome` every call names its tab, but the window is shared, so projects with different viewports do not run together: desktop projects first, then the `mobile` ones;
+- with `tool` `playwright` the browser has one current tab for all callers: one project per stage;
+- a project that could not get its own port in step 4 runs in the next stage.
+
+Give every agent: `tool` from step 3, the project label, the URL from step 4, the viewport (for `mobile` projects), the checklist rows of this project (with kind, priority and expected result), `browserTest.forbiddenActions`, the project working path, the screenshot directory, `screenshots` («Да»: every checked row; «Нет»: only when needed) and the `-after` suffix on re-runs after a fix. Nothing else: no excerpts from the references, the agent has its own procedure. It runs P1 rows first and returns a compact table; screenshots stay out of this conversation.
 
 In the «Обнаружение» mode give it `mode: reproduce` and the scenario of step 2R instead of checklist rows. Never give it mocks in this mode: a mock would fake the very data being recorded. If local code of a project is not its base (another branch or uncommitted changes) — say so in one line before the run: the result describes that code, not the base.
 
-- If the agent answers `login required` — ask the user to log in in the opened Chrome window, wait, call it again.
-- If the agent answers `tools unavailable` (the subagent cannot reach the browser MCP) — do this step yourself in this session: go through the checklist for every project following `${CLAUDE_PLUGIN_ROOT}/references/browser-testing.md` (P1 first; positive, negative and edge rows): navigate, interact, take a snapshot/screenshot of the key states (with `screenshots` = «Да» save them to the screenshot directory as described in step 0), check the console and network after each scenario.
+- If an agent answers `login required` — ask the user to log in in the opened Chrome window, wait, call only that agent again.
+- If the agent answers `tools unavailable` (the subagent cannot reach the browser MCP) — do this step yourself in this session: go through the checklist for every project, one project after another, following `${CLAUDE_PLUGIN_ROOT}/references/browser-testing.md` (P1 first; positive, negative and edge rows): navigate, interact, take a snapshot/screenshot of the key states (with `screenshots` = «Да» save them to the screenshot directory as described in step 0), check the console and network after each scenario.
 
 Forbidden: everything from `browserTest.forbiddenActions`; committing. If an item requires such an action — mark it «⚠️ не проверено» with the reason.
 
 ## Step 5a. Mocks for what could not be checked
 
-Only in the «Проверка» mode, when some rows came back `⚠️`: follow `${CLAUDE_PLUGIN_ROOT}/references/mocks.md`. Do not ask the user: rows that a mock makes checkable are mocked and checked again right away.
+Only in the «Проверка» mode, when some rows came back `⚠️`: follow `${CLAUDE_PLUGIN_ROOT}/references/mocks.md`. Do not ask the user: rows that a mock makes checkable are mocked and checked again right away, the projects at the same time as in step 5.
 
 ## Step 6R. Reproduction report («Обнаружение»)
 
