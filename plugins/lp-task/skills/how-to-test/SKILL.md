@@ -1,7 +1,6 @@
 ---
 name: how-to-test
-disable-model-invocation: true
-description: Build a short message for the testers of a task (what changed, where and in which states to check, the test cases already checked) and copy it to the clipboard; «copy» copies the saved message again
+description: Build a short message for the testers (QA) of a task and copy it to the clipboard: what changed, where and in which states to check, the test cases already checked. Use when the user asks how to test the changes or what to give the testers («как тестировать», «для тестеров», «что отдать QA», «где проверить эти изменения», «how to test»); with «copy» or «скопируй ещё раз» copies the saved tester message again
 argument-hint: "[task key] [copy]"
 ---
 
