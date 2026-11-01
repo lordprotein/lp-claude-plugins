@@ -78,9 +78,9 @@ The skill reviews existing E2E tests for quality issues:
 ```
 e2e/
 ├── SKILL.md                              # Main skill definition
-├── agents/
-│   └── agent.yaml                        # Agent interface config
 └── references/
+    ├── generate-workflow.md              # Generate mode, step by step
+    ├── review-workflow.md                # Review mode, step by step
     ├── e2e-testing-principles.md         # Four pillars for E2E, flow matrix, test pyramid
     ├── e2e-test-design-patterns.md       # Page Object Model, Screenplay, selectors, auth
     ├── user-flow-testing.md              # Critical paths, happy/sad, multi-step flows
@@ -102,7 +102,3 @@ Based on:
 - **Google** — Testing Blog, Software Engineering at Google
 - **Microsoft** — Playwright documentation, E2E testing best practices
 - **Deque Systems** — axe-core, accessibility testing
-
-## License
-
-MIT

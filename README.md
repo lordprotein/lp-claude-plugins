@@ -4,7 +4,7 @@ Personal Claude Code marketplace.
 
 | Plugin | What's inside |
 |--------|---------------|
-| `lp-task` | `/lp-task:do`, `/lp-task:commit`, `/lp-task:push`, `/lp-task:test-browser`, `/lp-task:mr-copy`, `/lp-task:init` |
+| `lp-task` | `/lp-task:do`, `/lp-task:commit`, `/lp-task:push`, `/lp-task:sync-base`, `/lp-task:test-browser`, `/lp-task:mr-copy`, `/lp-task:init` |
 | `lp-task-loop` | `/lp-task-loop:run` |
 | `lp-code-review` | `/lp-code-review:review` |
 | `lp-code-test` | `/lp-code-test:unit`, `/lp-code-test:e2e` |
@@ -44,6 +44,16 @@ To bootstrap a new machine automatically, add to the user `settings.json`:
 ## Updating
 
 Each plugin has a semver `version` in its `plugin.json`, shown on install and in `/plugin`. Installed copies update only when the version changes. Updates arrive via auto-update or `/plugin marketplace update lp-tools`.
+
+## Checks
+
+`claude plugin validate --strict` runs before every push through the repository hook `.githooks/pre-push`. Enable it once per clone:
+
+```
+git config core.hooksPath .githooks
+```
+
+Behaviour checks live in `plugins/<plugin>/evals/` and run with `claude plugin eval plugins/<plugin>` (each case runs with and without the plugin, so it costs several sessions; use `--runs 1` locally).
 
 ## Local development
 

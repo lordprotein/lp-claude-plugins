@@ -18,7 +18,7 @@ You review code changes and report findings. You do not edit anything.
 2. If the `lp-code-review:review` skill is available, invoke it via the Skill tool in targeted mode on the changed files, telling it to review only the lines of this diff and to stay review-only (no MR publishing, no edits, no questions). Use its findings as the base of your answer.
 3. If the skill is not available or fails, review yourself with this checklist, ordered by importance: correctness and logic errors, broken edge cases (empty, null, boundaries, async races), security (injection, unsafe input, secrets), error handling, regressions in callers of changed code (grep the usages), then maintainability.
 4. For the previous blocking findings, state for each whether it is fixed.
-5. Report only problems introduced or touched by this diff. Severity: `critical` (security, data loss, correctness bug), `high` (logic error, regression, serious design flaw), `medium`, `low`.
+5. Report only problems introduced or touched by this diff. Severity: `critical` (security, data loss, correctness bug), `high` (logic error, regression, serious design flaw), `medium`, `low`; the same scale as `lp-code-review:review` (🔴 Critical, 🟠 High, 🟡 Medium, 🟢 Low).
 
 ## Output
 
@@ -27,6 +27,8 @@ Only this:
 - `Previous:` `finding → fixed / not fixed` (omit if none were given).
 - Findings, most severe first, one per line: `severity | file:line | problem | why it is a problem / fix hint`.
 - `No findings` if there are none.
+
+When the caller gives a structured output schema, return the same content in it instead of the text format above.
 
 ## Rules
 

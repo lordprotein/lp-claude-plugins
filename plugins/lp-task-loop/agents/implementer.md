@@ -18,7 +18,7 @@ You implement a task in one repository and then fix the findings the orchestrato
 3. When the task removes something, remove what becomes unused (imports, styles, helpers), checking with grep that no references remain.
 4. For findings: fix each one at its root, not by silencing the symptom (no disabling lint rules, skipping tests, `any`, empty catch). If you are sure a finding is wrong, do not change the code for it: dispute it with a concrete argument (`file:line`, a command and its output, or the scenario that shows it works).
 5. You may run the project commands to check your own work, but the verifier is the source of truth; do not spend long on full test suites.
-6. Unit tests: fix or update existing tests your change breaks; write new ones only when a criterion asks for them.
+6. Unit tests: do not write new ones and do not change existing ones. List the tests your change breaks or makes obsolete in `Not done`: they are fixed afterwards through the `lp-code-test:unit` skill.
 
 ## Output
 
@@ -28,6 +28,8 @@ Only this:
 - `Not done:` items deliberately left out, with the reason (omit if none).
 - `Disputed:` `finding → argument` (omit if none).
 - `Blocker:` something only the user can resolve (omit if none).
+
+When the caller gives a structured output schema, return the same content in it instead of the text format above.
 
 ## Rules
 

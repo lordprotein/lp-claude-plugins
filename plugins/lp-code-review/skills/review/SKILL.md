@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Expert code review with a senior engineer lens. Reviews git changes or targeted code (files, folders, features). Detects SOLID violations, security risks, and proposes actionable improvements."
+description: "Expert code review with a senior engineer lens. Use whenever the user asks for a code review or a check before merge (ревью, проверь код, посмотри изменения, review this): git changes, pasted code, files, folders, features, a GitLab MR or a GitHub PR. Detects SOLID violations, security risks, performance and error-handling problems, and proposes actionable improvements."
 ---
 
 # Code Review Expert
@@ -13,9 +13,9 @@ Perform a structured code review with focus on SOLID, architecture, removal cand
 
 - **Default mode** (no argument): Reviews current git changes via `git diff`.
 - **Targeted review mode** (with argument): Reviews specific code — a file path, folder, feature name, function, or keyword. The argument is interpreted flexibly: it can be a path (`src/auth/`), an entity name (`PaymentService`), or a description (`логика корзины`).
-- **MR mode** (argument is a merge request link, or `mr`): Reviews the diff of a GitLab merge request and can publish the findings as MR comments (step 9).
+- **MR mode** (argument is a GitLab merge request or GitHub pull request link, or `mr`): Reviews the diff of the MR/PR and can publish the findings as comments (step 9).
 
-Config: the first `.claude/lp-task.json` found from the current directory upward (else `~/.claude/lp-task.json`), the same config file as the `lp-task` plugin. Without a config or a key use the defaults. Used keys: `stateDir` (default `~/.claude/lp-task/state`; task state is `<stateDir>/<key>.json`, `~` expands to home), `review.postToMr` (`ask` default: offer to publish findings to a GitLab MR; `never`: do not offer), `review.minSeverity` (`critical` | `high` | `medium` default | `low`: lowest severity offered for publishing), `review.gitlab.mcpServer` (GitLab MCP server name, default `gitlab`; `glab` is the fallback).
+Config: the first `.claude/lp-task.json` found from the current directory upward (else `~/.claude/lp-task.json`), the same config file as the `lp-task` plugin. Without a config or a key use the defaults. Used keys: `stateDir` (default `~/.claude/lp-task/state`; task state is `<stateDir>/<key>.json`, `~` expands to home), `review.postToMr` (`ask` default: offer to publish findings to the MR/PR; `never`: do not offer), `review.minSeverity` (`critical` | `high` | `medium` default | `low`: lowest severity offered for publishing), `review.gitlab.mcpServer` (GitLab MCP server name, default `gitlab`; `glab` is the fallback).
 
 ## Severity Levels
 
@@ -30,10 +30,10 @@ Config: the first `.claude/lp-task.json` found from the current directory upward
 
 ### 0) Mode detection
 
-If the argument is a merge request link (`.../-/merge_requests/<iid>`) or the word `mr` (take the MR from the current task state `<stateDir>/<key>.json` field `mr`, or from the open MR of the current branch), switch to **MR mode**:
+If the argument is a merge request link (GitLab `.../-/merge_requests/<iid>` or GitHub `.../pull/<number>`) or the word `mr` (take the MR from the current task state `<stateDir>/<key>.json` field `mr`, or from the open MR of the current branch), switch to **MR mode**:
 
-1. Resolve the project and MR iid, load the MR diff by following `references/mr-comments.md` (section «Reading the MR»).
-2. Review exactly the lines changed by the MR; skip step 1 (git diff) and continue from step 2. Remember `base_sha`, `start_sha`, `head_sha` and the changed files, they are needed for step 9.
+1. Resolve the project and MR iid (PR number), load the diff by following `references/mr-comments.md` (section «Reading the MR» for GitLab, «GitHub» for GitHub).
+2. Review exactly the lines changed by the MR; skip step 1 (git diff) and continue from step 2. Remember `base_sha`, `start_sha`, `head_sha` (GitHub: the head commit sha) and the changed files, they are needed for step 9.
 
 Otherwise, if the user provides an argument (text after the skill command), switch to **targeted review mode**:
 
@@ -216,13 +216,4 @@ After presenting findings, end with the severity summary and one question:
 
 ### 9) Publish findings to the merge request (optional)
 
-Runs only when there is a GitLab MR for the reviewed code (MR mode, or the current task/branch has an open MR) and `review.postToMr` is not `never`. Otherwise skip silently.
-
-Publishing is an outward-facing action: never post anything without an explicit answer.
-
-1. Collect the findings with severity ≥ `review.minSeverity` (default `medium`; 🟢 only on request).
-2. Show a preview table: `#`, severity, title, `file:line`, `inline` or `general note` (per `references/mr-comments.md`, section «Placement»).
-3. Ask (AskUserQuestion), header «MR»: «Опубликовать комментарии в MR?» — «Опубликовать все» / «Только 🔴🟠» / «Не публиковать». «Не публиковать» ends the step.
-4. Post exactly the confirmed set by following `references/mr-comments.md` (tools order: GitLab MCP, then `glab`; dedup; inline discussions with fallback to a general note; one summary note).
-5. Print what was posted: counts, and links to the discussions if the tool returned them. Never resolve, edit or delete existing comments.
-
+Runs only when there is a GitLab MR or a GitHub PR for the reviewed code (MR mode, or the current task/branch has an open MR) and `review.postToMr` is not `never`. Otherwise skip silently. Follow `references/mr-comments.md` section «Publishing»: preview, explicit confirmation, then posting. Never post anything without an explicit answer.

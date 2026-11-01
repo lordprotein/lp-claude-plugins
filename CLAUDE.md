@@ -2,12 +2,20 @@
 
 Claude Code marketplace `lp-tools`. No build, test or lint — only markdown, JSON and YAML executed by Claude Code.
 
+## No project specifics
+
+These plugins are used across unrelated projects, and none of them may know anything about a particular one.
+- No project names, repository or folder names, paths, domains, hosts, ticket keys, team names, people, package scopes, branch or script names (e.g. a project's own `dev:*` command), stack choices or rules that come from one project.
+- Everything project-specific lives in the project: its `CLAUDE.md`, its `.claude/lp-task.json` (`notes`, `planNotes`) or user settings, never in a plugin.
+- Examples, configs, evals and docs use neutral placeholders (`acme`, `example.com`, `ACME-123`) and generic data.
+- Before committing, search the diff for names from the projects you work on.
+
 ## Structure
 
 - `.claude-plugin/marketplace.json` — marketplace manifest, lists every plugin in `plugins/`
 - `plugins/<plugin>/skills/<name>/` — skills, invoked as `/<plugin>:<name>`
-- `plugins/lp-task/` — task flow, invoked as `/lp-task:<name>`: `commands/`, `agents/` (`browser-tester`), no skills
-- `plugins/lp-task-loop/` — command `run` (autonomous implement/verify/review/skeptic loop), `agents/` (`implementer`, `verifier`, `reviewer`, `skeptic`)
+- `plugins/lp-task/` — task flow, invoked as `/lp-task:<name>`: `skills/` (do, commit, push, sync-base, test-browser, mr-copy, init), `shared.md` (config, hard rules, state, «Which task»), `references/`, `agents/` (`browser-tester`), `hooks/` (git guards, context after compaction), `bin/lp-stop-port`
+- `plugins/lp-task-loop/` — skill `run` (setup, then the workflow `skills/run/loop.js`: implement/verify/skeptic/review loop), `agents/` (`implementer`, `verifier`, `skeptic`, `reviewer`), `hooks/` (no git writes during the loop)
 - `plugins/lp-code-review/` — skill `review`
 - `plugins/lp-code-test/` — skills `unit`, `e2e`
 - `plugins/lp-explain-code/` — skill `explain`
@@ -18,7 +26,10 @@ Claude Code marketplace `lp-tools`. No build, test or lint — only markdown, JS
 - New skill → new folder in `plugins/<plugin>/skills/`, add it to the tables in the root `README.md` and the plugin `README.md`, and to the description in its `plugin.json`
 - New plugin → new folder in `plugins/` with `.claude-plugin/plugin.json`, `README.md`, an entry in `marketplace.json` and in the root `README.md`
 - A plugin cannot read files of another plugin (`${CLAUDE_PLUGIN_ROOT}` is its own folder): call the other plugin's skill via the Skill tool and inline the config defaults it needs
-- Keep content portable: examples, configs and instructions must work in any project — use neutral placeholders (e.g. `acme`) instead of real project names, paths, domains, ticket keys or other identifying details
 - Every commit that changes a plugin bumps `version` in its `plugin.json` (semver: patch for fixes and wording, minor for new commands, skills or behavior, major for renames and removals). Without a bump installed copies do not update
 - Skill-specific rules live in the skill's own `CLAUDE.md`
-- Run `claude plugin validate .` before pushing
+- Commands are skills (`skills/<name>/SKILL.md`); skills with side effects that only the user starts get `disable-model-invocation: true`. Such a skill cannot be called through the Skill tool: another skill reaches it by reading its `SKILL.md`
+- `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}` and `${CLAUDE_SKILL_DIR}` are substituted only in a skill or agent body loaded by Claude Code, not in files read with Read (`shared.md`, references)
+- Hooks are bash + jq (node may come from nvm and be missing in the hook environment); test them by piping a JSON input into the script
+- Run `claude plugin validate .` before pushing; `.githooks/pre-push` runs `--strict` for the marketplace and every plugin (enable once: `git config core.hooksPath .githooks`)
+- Evals live in `plugins/<plugin>/evals/`, run with `claude plugin eval plugins/<plugin>`

@@ -13,20 +13,19 @@ Two modes:
 ## Architecture
 
 ```
-SKILL.md              ← Main skill definition: workflow, rules, output formats
-agents/agent.yaml     ← Agent interface config (display name, default prompt)
+SKILL.md              ← Main skill definition: modes, severity, workflow loading
 references/           ← Knowledge base loaded on-demand during skill execution
 ```
 
 ### Skill Execution Flow
 
-The skill is invoked via `/lp-code-test:e2e`. SKILL.md defines the entire workflow:
+The skill is invoked via `/lp-code-test:e2e`. SKILL.md picks the mode and loads its workflow: `references/generate-workflow.md` or `references/review-workflow.md`.
 
 **Generate mode** (7 steps): Determine scope → Preflight → Classify flows (E2E Flow Matrix) → Determine scenarios → Generate tests → Self-check antipatterns → Output
 
 **Review mode** (4 steps): Preflight → Evaluate against checklist → Assess severity → Output
 
-Steps marked «Required: load X» in SKILL.md must load specific reference files before execution — this is enforced by the workflow, not optional.
+Steps marked «Required: load X» in the workflow files must load specific reference files before execution — this is enforced by the workflow, not optional.
 
 ### References (Knowledge Base)
 
@@ -34,7 +33,7 @@ Each reference file is loaded at specific steps, not all at once:
 
 | File | Loaded When |
 |------|-------------|
-| `e2e-testing-principles.md` | Step 2, optional (the matrix and risk tags live in SKILL.md) |
+| `e2e-testing-principles.md` | Step 2, optional (the matrix and risk tags live in `generate-workflow.md`) |
 | `user-flow-testing.md` | Step 3 (Determine scenarios) |
 | `e2e-test-design-patterns.md` | Step 4 (Generate tests) |
 | `network-and-api-handling.md` | Step 4, only for third-party services, GraphQL, WebSocket, error simulation or clock control |
@@ -55,10 +54,9 @@ Each reference file is loaded at specific steps, not all at once:
 
 ## Editing Guidelines
 
-- `SKILL.md` is the single source of truth for the skill workflow. All mandatory steps, output formats, and rules live here.
+- `SKILL.md` holds the modes, the severity levels and the workflow loading; the steps, output formats and rules of each mode live in `references/generate-workflow.md` and `references/review-workflow.md`.
 - `references/` files are the knowledge base. They are self-contained documents — each covers one topic fully.
 - Keep content portable: examples and instructions must work in any project — use neutral placeholders (e.g. `acme`) instead of real project names, paths, domains or other identifying details
-- `agents/agent.yaml` defines the agent interface only (display name, description, default prompt). Keep it minimal.
 - When adding a new E2E testing topic, create a new file in `references/` and add a loading instruction to the relevant step in SKILL.md.
 
 ## Важно

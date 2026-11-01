@@ -1,0 +1,42 @@
+#!/bin/bash
+# lp-stop-port <port> [--force]: stop the process listening on a local TCP port (a dev server).
+# TERM first, waits up to 5 s; KILL only with --force. Ports below 1024 are refused.
+set -u
+port="${1:-}"
+force="${2:-}"
+
+if ! [[ "$port" =~ ^[0-9]+$ ]]; then
+  echo "usage: lp-stop-port <port> [--force]" >&2
+  exit 2
+fi
+if [ "$port" -lt 1024 ] || [ "$port" -gt 65535 ]; then
+  echo "refused: port $port is outside 1024-65535" >&2
+  exit 2
+fi
+
+pids=$(lsof -nP -ti "tcp:$port" -sTCP:LISTEN 2>/dev/null | sort -u)
+if [ -z "$pids" ]; then
+  echo "port $port: nothing is listening"
+  exit 0
+fi
+
+echo "port $port is used by:"
+for pid in $pids; do
+  cwd=$(lsof -a -p "$pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p')
+  echo "  $(ps -o pid=,command= -p "$pid" | cut -c1-200)  (cwd: ${cwd:-?})"
+done
+
+kill -TERM $pids 2>/dev/null
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  sleep 0.5
+  lsof -nP -ti "tcp:$port" -sTCP:LISTEN >/dev/null 2>&1 || { echo "port $port is free"; exit 0; }
+done
+
+if [ "$force" = "--force" ]; then
+  kill -KILL $(lsof -nP -ti "tcp:$port" -sTCP:LISTEN 2>/dev/null) 2>/dev/null
+  sleep 0.5
+  lsof -nP -ti "tcp:$port" -sTCP:LISTEN >/dev/null 2>&1 || { echo "port $port is free (killed)"; exit 0; }
+fi
+
+echo "port $port is still busy; run again with --force to kill" >&2
+exit 1

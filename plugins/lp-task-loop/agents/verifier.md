@@ -30,7 +30,9 @@ Only this:
 
 Then one line: `New failures: <count>`.
 
+When the caller gives a structured output schema, return the same content in it instead of the text format above.
+
 ## Rules
 
-- No Edit/Write, no git commands that change anything.
+- No Edit/Write, no git commands that change anything. The one exception: the snapshot command the caller gives (it writes only to a temporary index via `GIT_INDEX_FILE`); run it exactly as given.
 - Never paste full logs: one key line per failure, at most 5 failures per command (`+N more`).

@@ -1,4 +1,6 @@
 ---
+name: push
+disable-model-invocation: true
 description: Push the task branches and create MRs/PRs in all of its projects, print the links
 argument-hint: "[task key]"
 ---
@@ -13,8 +15,11 @@ Invoking this command is an explicit permission to push.
 
 ## Which task
 
-1. The key from the argument (via `tracker.keyRegex`), otherwise — the task from the current context.
-2. Otherwise — `<stateDir>/*.json` that has projects with `commit` and `pushed: false`. If there is exactly one — take it; if several — ask (AskUserQuestion); if none — say there is nothing to push.
+As in `shared.md` «Which task». Filter for step 4: state files that have projects with `commit` and `pushed: false`. None — say there is nothing to push.
+
+## Push marker
+
+Before the first push create `<stateDir>/<key>.push-allowed`, after the last push (or a failure) remove it (`shared.md` «Push marker»). Without it the plugin hook denies the push.
 
 ## Push
 
@@ -29,7 +34,10 @@ For every project of the task that has commits:
    - the branches diverged — do not push, show it and ask: «force-with-lease» / «Пропустить».
 4. Push and create the MR:
    - `git.host: gitlab` — `git -C <path> push -u origin <branch> -o merge_request.create -o merge_request.target=<base> -o "merge_request.title=<mrTitle>"`;
-   - `git.host: github` — `git -C <path> push -u origin <branch>`, then `cd <path> && gh pr create --base <base> --head <branch> --title "<mrTitle>" --body ""`. If `gh` is not installed or not authorized — say so and print the compare link from the push output instead.
+   - `git.host: github` — `git -C <path> push -u origin <branch>`, then create the PR with the description built from `git.mrDescription` (lines joined with newlines):
+     - GitHub MCP `create_pull_request` (load it via ToolSearch if deferred): owner and repo from `git remote get-url origin`, `base`, `head` = `<branch>`, `title` = `<mrTitle>`, `body` = the description;
+     - if the MCP is unavailable — write the description to a temp file and run `cd <path> && gh pr create --base <base> --head <branch> --title "<mrTitle>" --body-file <file>`;
+     - if neither works — say so and print the compare link from the push output instead.
 5. Take the link from the output (or from the state for an existing MR): `.../-/merge_requests/<id>` for GitLab, `.../pull/<id>` for GitHub. Look for it in the whole output (`remote: ...` lines), do not truncate the output with `tail`/`head`. If the link cannot be found — say so and ask the user for the link; do not substitute a link to a filtered MR list.
 6. If the branch existed on the remote before the first push of this task (the MR is not from the state) — warn: GitLab push options do not change the target of an existing MR, it has to be checked manually.
 

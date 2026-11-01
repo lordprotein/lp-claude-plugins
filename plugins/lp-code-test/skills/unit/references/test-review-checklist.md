@@ -20,7 +20,7 @@
 - [ ] Private methods are not tested directly
 - [ ] Tests would survive renaming/restructuring of internals
 
-**Red flag**: If refactoring internal implementation (without changing behavior) would break tests → P1 finding.
+**Red flag**: If refactoring internal implementation (without changing behavior) would break tests → 🟠 High finding.
 
 ### Fast Feedback
 - [ ] Slow Poke checks (antipatterns-checklist.md), plus: full unit suite runs in under 30 seconds

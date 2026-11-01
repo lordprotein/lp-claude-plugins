@@ -1,4 +1,6 @@
 ---
+name: mr-copy
+disable-model-invocation: true
 description: Copy the team MR message of a task to the clipboard again and print it
 argument-hint: "[task key]"
 ---
@@ -13,8 +15,7 @@ Read-only: do not push, do not change the state.
 
 ## Which task
 
-1. The key from the argument (via `tracker.keyRegex`), otherwise — the task from the current context.
-2. Otherwise — the most recently modified `<stateDir>/*.json` that has at least one project with `mr`. Name its key in the answer.
+As in `shared.md` «Which task», except step 4: take the most recently modified state file that has at least one project with `mr`, without asking, and name its key.
 
 ## Message
 

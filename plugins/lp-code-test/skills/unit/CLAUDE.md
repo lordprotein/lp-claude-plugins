@@ -14,7 +14,6 @@ Two modes:
 
 ```
 SKILL.md              ← Entry point: modes, scope, severity, Detection Table, which workflow to load
-agents/agent.yaml     ← Agent interface config (display name, default prompt)
 references/           ← Mode workflows + knowledge base, loaded on demand during skill execution
 ```
 
@@ -49,7 +48,7 @@ Each reference file is loaded at specific steps, not all at once:
 ### Key Concepts
 
 - **Khorikov classification matrix** (domain model / UI / utility / trivial / controller / overcomplicated) drives which code gets tested and how
-- **Severity levels** P0-P3: P0 = false confidence and shared mutable state, P1 = over-mocking/fragility, P2 = readability, P3 = trivial
+- **Severity levels** 🔴 Critical / 🟠 High / 🟡 Medium / 🟢 Low (the same scale as `lp-code-review` and `e2e`): 🔴 = false confidence and shared mutable state, 🟠 = over-mocking/fragility, 🟡 = readability, 🟢 = trivial
 - **Classical school by default**: real objects preferred, mocks only for unmanaged out-of-process dependencies
 - **Confirmation-first**: Generate confirms the scenarios plan (code is shown only on request), Review and Fix confirm what to change; nothing is written to disk without confirmation
 
@@ -58,7 +57,6 @@ Each reference file is loaded at specific steps, not all at once:
 - `SKILL.md` + `references/*-workflow.md` are the source of truth for the skill workflow: mandatory steps, output formats and rules live there. Keep SKILL.md small, mode-specific content goes into the workflow files.
 - `references/` files are the knowledge base. They are self-contained documents — each covers one topic fully.
 - Keep content portable: examples and instructions must work in any project — use neutral placeholders (e.g. `acme`) instead of real project names, paths, domains or other identifying details
-- `agents/agent.yaml` defines the agent interface only (display name, description, default prompt). Keep it minimal.
 - When adding a new testing topic, create a new file in `references/` and add a loading instruction to the relevant step in SKILL.md.
 
 ## Важно

@@ -19,18 +19,18 @@ Required: load ALL THREE files below. Do not evaluate from memory alone.
 - Load `references/test-doubles-guide.md` for doubles assessment.
 
 Required procedure, in this exact order, no skipped steps or merged findings:
-1. **Scan for Liars** (P0) — meaningful assertions in every test?
-2. **Check isolation** (P0) — shared mutable state?
-3. **Check doubles usage** (P1) — over-mocking? mocking internals?
-4. **Check fragility** (P1) — behavior or implementation verification?
-5. **Check coverage quality** (P1) — critical paths tested?
-6. **Check readability** (P2) — names, AAA structure, clarity
-7. **Check speed** (P2) — unnecessary delays or real I/O?
-8. **Check for trivial tests** (P3) — testing getters/constructors?
+1. **Scan for Liars** (🔴 Critical) — meaningful assertions in every test?
+2. **Check isolation** (🔴 Critical) — shared mutable state?
+3. **Check doubles usage** (🟠 High) — over-mocking? mocking internals?
+4. **Check fragility** (🟠 High) — behavior or implementation verification?
+5. **Check coverage quality** (🟠 High) — critical paths tested?
+6. **Check readability** (🟡 Medium) — names, AAA structure, clarity
+7. **Check speed** (🟡 Medium) — unnecessary delays or real I/O?
+8. **Check for trivial tests** (🟢 Low) — testing getters/constructors?
 
 ## 3) Assess severity
 
-Assign severity to each finding using the severity levels defined in SKILL.md (P0-P3).
+Assign severity to each finding using the severity levels defined in SKILL.md (🔴 Critical, 🟠 High, 🟡 Medium, 🟢 Low).
 
 ## 4) Output format
 
@@ -45,20 +45,20 @@ Assign severity to each finding using the severity levels defined in SKILL.md (P
 
 ## Findings
 
-### P0 - Critical
+### 🔴 Critical
 (none or list)
 
-### P1 - High
+### 🟠 High
 1. **[test_file:line]** Brief title
    - **Antipattern**: Which antipattern
    - **Problem**: What's wrong
    - **Impact**: Why it matters
    - **Fix**: Suggested correction with code example
 
-### P2 - Medium
+### 🟡 Medium
 2. (continue numbering)
 
-### P3 - Low
+### 🟢 Low
 ...
 
 ---
@@ -73,12 +73,12 @@ Assign severity to each finding using the severity levels defined in SKILL.md (P
 
 ---
 
-Найдено X (P0: _, P1: _, P2: _, P3: _).
+Найдено X (🔴 _, 🟠 _, 🟡 _, 🟢 _).
 ```
 
 Then, if there is at least one finding, ask via `AskUserQuestion`, header «Исправить», single select:
 - «Все»
-- «Только P0–P1»
+- «Только 🔴🟠»
 - «Выбрать номера» — the user enters the finding numbers via Other (e.g. `1, 3, 5`); if they pick this option without numbers, ask for them
 - «Ничего»
 

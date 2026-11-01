@@ -1,0 +1,16 @@
+#!/bin/bash
+# Validate the marketplace and every plugin before pushing. Enable: git config core.hooksPath .githooks
+root=$(git rev-parse --show-toplevel)
+if ! command -v claude >/dev/null 2>&1; then
+  echo "pre-push: claude CLI not found, skipping plugin validation" >&2
+  exit 0
+fi
+status=0
+for target in "$root" "$root"/plugins/*/; do
+  if ! out=$(claude plugin validate --strict "$target" 2>&1); then
+    echo "$out" >&2
+    status=1
+  fi
+done
+[ $status -eq 0 ] && echo "pre-push: plugin validation passed"
+exit $status

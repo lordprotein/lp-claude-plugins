@@ -61,13 +61,12 @@ The argument is interpreted flexibly — it can be a file path, folder, class/fu
 ```
 review/
 ├── SKILL.md                 # Main skill definition
-├── agents/
-│   └── agent.yaml           # Agent interface config
 └── references/
     ├── solid-checklist.md         # SOLID smell prompts
     ├── solid-react-checklist.md   # React-specific SOLID patterns
     ├── security-checklist.md      # Security & reliability
     ├── code-quality-checklist.md  # Error handling, boundaries
+    ├── mr-comments.md             # Reading an MR/PR, publishing findings as comments
     └── performance-checklist.md   # Big O, memory leaks, CPU, I/O, caching
 ```
 
@@ -80,7 +79,3 @@ Each checklist provides detailed prompts and anti-patterns:
 - **security-checklist.md** - OWASP risks, race conditions, crypto, supply chain
 - **code-quality-checklist.md** - Error handling, null safety, boundary conditions
 - **performance-checklist.md** - Big O complexity, memory leaks, CPU hot paths, database & I/O, caching, profiling mindset
-
-## License
-
-MIT

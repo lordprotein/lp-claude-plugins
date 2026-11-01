@@ -4,16 +4,18 @@
 
 | Команда | Что делает |
 |---|---|
-| `/lp-code-review:review [путь \| ссылка на MR \| mr]` | Ревью изменений или кода; для MR GitLab может опубликовать замечания комментариями в MR |
+| `/lp-code-review:review [путь \| ссылка на MR/PR \| mr]` | Ревью изменений или кода; для MR GitLab и PR GitHub может опубликовать замечания комментариями |
 
 Подробности в [`skills/review/README.md`](skills/review/README.md).
 
-## Комментарии ревью в MR GitLab
+## Комментарии ревью в MR GitLab и PR GitHub
 
 После ревью MR (`/lp-code-review:review <ссылка на MR>` или `mr`) скилл показывает, что будет опубликовано, и публикует только после вашего подтверждения. Приоритет инструментов: GitLab MCP, затем `glab`. Подключение:
 
 - `glab`: `glab auth login --hostname <host>`, проверка `glab auth status`;
 - GitLab MCP для self-hosted: `claude mcp add --transport http gitlab https://<host>/api/v4/mcp` и авторизация (проверьте адрес и требования версии в документации вашего GitLab). Официальный плагин `gitlab` смотрит на gitlab.com и для self-hosted не подходит.
+
+Для PR GitHub: GitHub MCP (официальный плагин `github`), затем `gh`. Замечания уходят одним review с событием `COMMENT`, без approve и request changes.
 
 Подробности формата (inline-комментарии, дедупликация, итоговая сводка) в `skills/review/references/mr-comments.md`.
 

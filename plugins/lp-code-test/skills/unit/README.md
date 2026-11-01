@@ -44,7 +44,7 @@ The skill reviews existing tests for quality issues:
 1. Evaluates against the Four Pillars (Khorikov)
 2. Detects antipatterns (The Liar, The Mockery, Fragile Tests, etc.)
 3. Assesses business logic coverage gaps
-4. Reports findings by severity (P0-P3)
+4. Reports findings by severity (🔴 Critical, 🟠 High, 🟡 Medium, 🟢 Low)
 5. Asks what to fix (native select) before implementing fixes
 
 ## Workflow
@@ -61,9 +61,9 @@ The skill reviews existing tests for quality issues:
 ### Review Mode
 1. **Preflight** — Collect test files, read production code
 2. **Evaluate** — Check against review checklist
-3. **Severity** — Assign P0-P3 to each finding
+3. **Severity** — Assign 🔴🟠🟡🟢 to each finding
 4. **Output** — Findings with suggested fixes
-5. **Confirm** — Select what to fix: all / P0–P1 / by numbers / nothing
+5. **Confirm** — Select what to fix: all / only 🔴🟠 / by numbers / nothing
 
 The "Fix existing tests" path of Review handles tests broken by code changes (used by `/lp-task:do`).
 
@@ -71,18 +71,16 @@ The "Fix existing tests" path of Review handles tests broken by code changes (us
 
 | Level | Name | Action |
 |-------|------|--------|
-| P0 | Critical | Must fix — false confidence or test pollution |
-| P1 | High | Should fix — fragile, over-mocked, missing coverage |
-| P2 | Medium | Fix or follow-up — readability, naming, structure |
-| P3 | Low | Optional — style, minor suggestions |
+| 🔴 | **Critical** | Must fix — false confidence or test pollution |
+| 🟠 | **High** | Should fix — fragile, over-mocked, missing coverage |
+| 🟡 | **Medium** | Fix or follow-up — readability, naming, structure |
+| 🟢 | **Low** | Optional — style, minor suggestions |
 
 ## Structure
 
 ```
 unit/
 ├── SKILL.md                           # Entry point: modes, severity, Detection Table
-├── agents/
-│   └── agent.yaml                     # Agent interface config
 └── references/
     ├── generate-workflow.md           # Generate mode steps and output
     ├── review-workflow.md             # Review mode steps, output, fixing existing tests
@@ -107,7 +105,3 @@ Based on:
 - **Gerard Meszaros** — xUnit Test Patterns
 - **Google** — Testing Blog, Software Engineering at Google
 - **Steve Freeman & Nat Pryce** — Growing Object-Oriented Software, Guided by Tests
-
-## License
-
-MIT

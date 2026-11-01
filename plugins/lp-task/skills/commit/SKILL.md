@@ -1,4 +1,6 @@
 ---
+name: commit
+disable-model-invocation: true
 description: Commit the task changes in all of its projects (first commit "{key}: {title}" or a fix "{key}: fix (...)"), then offer to push
 argument-hint: "[short fix description]"
 ---
@@ -13,8 +15,7 @@ A **new** commit is always created. No amend and no force push.
 
 ## Which task
 
-1. The task from the current context.
-2. Otherwise — `<stateDir>/*.json`: if there is one file — take it; if several — ask (AskUserQuestion), the default is the most recently modified one.
+As in `shared.md` «Which task» (this command has no key argument, start from step 2). Filter for step 4: state files whose projects have uncommitted changes on the task branch. None — say there is nothing to commit.
 
 ## Collecting changes
 
@@ -59,5 +60,5 @@ Print a table «project → branch → sha → message».
 If no commit was made in any project — skip this section.
 
 Ask AskUserQuestion, header «Push»: «Запушить изменения?» — exactly 2 options: «Да» / «Нет».
-- «Да» — this is an explicit permission to push: read `${CLAUDE_PLUGIN_ROOT}/commands/push.md` and follow it for this same task (`/lp-task:push`).
+- «Да» — this is an explicit permission to push: read `${CLAUDE_PLUGIN_ROOT}/skills/push/SKILL.md` and follow it for this same task (`/lp-task:push`).
 - «Нет» — push nothing, print the hint «Для push — `/lp-task:push`» and stop.

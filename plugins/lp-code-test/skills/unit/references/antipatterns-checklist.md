@@ -315,14 +315,14 @@ def test_new_customer_no_discount():
 
 | Antipattern | Key Signal | Severity |
 |-------------|-----------|----------|
-| The Liar | No meaningful assert | P0 |
-| The Giant | Multiple acts + many asserts | P1 |
-| The Mockery | Mock setup > test logic | P1 |
-| The Inspector | Testing private methods | P1 |
-| The Slow Poke | sleep() or real I/O in unit test | P2 |
-| Ice Cream Cone | Mostly E2E, few unit tests | P1 |
-| Fragile Tests | Tests break on refactor | P1 |
-| Second Class Citizen | Copy-paste, magic values, no helpers | P2 |
-| 100% Coverage Trap / Trivial Code | Tests for trivial code | P3 |
-| Shared Mutable State | Tests affect each other | P0 |
-| Conditional Logic | if/for in test body | P2 |
+| The Liar | No meaningful assert | 🔴 Critical |
+| The Giant | Multiple acts + many asserts | 🟠 High |
+| The Mockery | Mock setup > test logic | 🟠 High |
+| The Inspector | Testing private methods | 🟠 High |
+| The Slow Poke | sleep() or real I/O in unit test | 🟡 Medium |
+| Ice Cream Cone | Mostly E2E, few unit tests | 🟠 High |
+| Fragile Tests | Tests break on refactor | 🟠 High |
+| Second Class Citizen | Copy-paste, magic values, no helpers | 🟡 Medium |
+| 100% Coverage Trap / Trivial Code | Tests for trivial code | 🟢 Low |
+| Shared Mutable State | Tests affect each other | 🔴 Critical |
+| Conditional Logic | if/for in test body | 🟡 Medium |

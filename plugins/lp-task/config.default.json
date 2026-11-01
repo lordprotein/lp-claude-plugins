@@ -11,6 +11,7 @@
     "commit": "{key}: {title}",
     "fixCommit": "{key}: fix ({summary})",
     "mrTitle": "{key}: {title}",
+    "mrDescription": ["{issueUrl}", "", "{title}", "", "{commits}"],
     "ignorePaths": []
   },
   "mrMessage": {

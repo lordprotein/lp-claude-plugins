@@ -1,6 +1,18 @@
-# Merge request comments (GitLab)
+# Merge request comments (GitLab, GitHub)
 
 How to read a GitLab MR and publish review findings as MR comments. Used by MR mode (step 0) and step 9 of `SKILL.md`.
+
+## Publishing
+
+Step 9 of `SKILL.md`.
+
+Publishing is an outward-facing action: never post anything without an explicit answer.
+
+1. Collect the findings with severity ≥ `review.minSeverity` (default `medium`; 🟢 only on request).
+2. Show a preview table: `#`, severity, title, `file:line`, `inline` or `general note` (section «Placement» below).
+3. Ask (AskUserQuestion), header «MR»: «Опубликовать комментарии в MR?» — «Опубликовать все» / «Только 🔴🟠» / «Не публиковать». «Не публиковать» ends the step.
+4. Post exactly the confirmed set by following this file (GitLab: GitLab MCP, then `glab`; GitHub: section «GitHub», GitHub MCP, then `gh`; dedup; inline comments with fallback to a general note; one summary note).
+5. Print what was posted: counts, and links to the discussions if the tool returned them. Never resolve, edit or delete existing comments.
 
 ## Tools (in this order)
 
@@ -68,6 +80,18 @@ Verdict: <APPROVE | REQUEST_CHANGES | COMMENT>
 ## Deduplication
 
 Before posting, `GET /projects/:id/merge_requests/:iid/discussions` (all pages) and collect `lp-review:<fingerprint>` markers from existing notes. Skip a finding whose fingerprint already exists. Report skipped findings in the final output («уже опубликовано: N»). Post the summary note only if no `lp-review:summary` note exists, otherwise skip it.
+
+## GitHub
+
+The same placement, comment text, fingerprint and rules as above; only the calls differ. The host is GitHub when the remote URL or the link is on `github.com` (or the state says `git.host: github`).
+
+Tools, in this order: GitHub MCP (load its tools via ToolSearch: `pull_request_read`, `pull_request_review_write`, `add_comment_to_pending_review`), then `gh api` (if `gh` is installed and authorized), otherwise offer to save the comments to a markdown file as for GitLab.
+
+1. **Read.** `pull_request_read` (methods `get`, `get_diff`, `get_files`) or `gh api repos/:owner/:repo/pulls/:number` and `.../files`. Remember `head.sha`.
+2. **Dedup.** Read the existing review comments and issue comments of the PR (`pull_request_read` methods `get_review_comments` and `get_comments`, or `gh api .../pulls/:number/comments` and `.../issues/:number/comments`) and collect the `lp-review:` markers.
+3. **Post as one review.** `pull_request_review_write` method `create` (no `event`: a pending review), then `add_comment_to_pending_review` once per inline finding (`path`, `line` on the new side, `side: "RIGHT"`, `subjectType: "LINE"`, `body`), then `pull_request_review_write` method `submit_pending` with `event: "COMMENT"` and the summary note as the review body. With `gh`: one `gh api -X POST repos/:owner/:repo/pulls/:number/reviews` with `commit_id`, `event: "COMMENT"`, `body` (summary) and `comments[]` (`path`, `line`, `side`, `body`).
+4. A finding whose line is not in the diff goes into the summary body as a `file:line` item instead of an inline comment.
+5. Never use `APPROVE` or `REQUEST_CHANGES`: the event is always `COMMENT`.
 
 ## Rules
 

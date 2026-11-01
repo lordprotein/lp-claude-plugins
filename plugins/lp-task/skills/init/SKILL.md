@@ -1,4 +1,5 @@
 ---
+name: init
 description: Create or update the lp-task config for the current project or a group of projects
 argument-hint: "[path to save the config]"
 ---
