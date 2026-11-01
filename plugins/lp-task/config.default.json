@@ -20,6 +20,11 @@
     "link": "* {label}: {url}",
     "clipboard": true
   },
+  "howToTest": {
+    "header": "",
+    "maxCases": 8,
+    "clipboard": true
+  },
   "stateDir": "~/.claude/lp-task/state",
   "review": {
     "postToMr": "ask",

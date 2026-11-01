@@ -41,14 +41,10 @@ Follow `${CLAUDE_PLUGIN_ROOT}/references/reproduce.md` «Scenario», then contin
 If `<stateDir>/<key>.json` has `reproduction` — its scenario is the first row (`positive`, `P1`): the same steps, with the expected result now required, and the `observedData` given to the agent as the input to look for (the fix must handle exactly these values).
 
 
-For every project collect the changes: start with `git -C <path> diff --stat --merge-base origin/<base>` (committed and uncommitted together; add untracked new files from `status --short`), then read the diff `git -C <path> diff --merge-base origin/<base> -- . ':!*lock*' ':!*.snap'` (also skip generated and built files seen in the stat). Changes made in this session that are already in the context need not be read again. Build a checklist:
+For every project collect the changes and find what they reach by `${CLAUDE_PLUGIN_ROOT}/references/impact.md`. Changes made in this session that are already in the context need not be read again. Build a checklist:
 
 - **Acceptance** — every scenario the task requires (what must appear / disappear / behave differently), including the states mentioned in the task.
-- **Regression** — everything that could break because of the changes:
-  - pages and widgets that use the changed components, hooks, selectors, styles, locales — find them with `git -C <path> grep` by imports of the changed modules;
-  - neighbouring states: empty / loading / error, guest / authorized, alternative variants of the UI that share the changed code, different languages if locales are changed;
-  - for removals — the places where the removed entity used to be render correctly without it;
-  - no new errors in the console, no 4xx/5xx in network requests caused by the changes.
+- **Regression** — the places and states from the impact map: pages and widgets that use the changed code, neighbouring states, places of removed entities, and no new console errors or 4xx/5xx caused by the changes.
 
 Read `${CLAUDE_PLUGIN_ROOT}/references/browser-testing.md` and use it to design the checklist: besides the acceptance scenarios and regression, deliberately add **negative** scenarios (invalid or missing input, no permission, server/network failure) and **edge** cases (boundaries, empty/many, long text, other languages and viewports, double actions, reload/back) that are relevant to what the diff changes (the table «From change type to cases» there). Choose by risk and keep the list bounded: merge near-identical rows, tag every row with a kind (`positive` / `negative` / `edge` / `state` / `regression`) and a priority (`P1`-`P3`).
 
@@ -88,6 +84,8 @@ Follow `${CLAUDE_PLUGIN_ROOT}/references/reproduce.md` «Report», then go to st
 ## Step 6. Report («Проверка»)
 
 A table: project → kind → item → ✅ / ❌ / ⚠️ → short comment. For every ❌ — steps, what was expected, what actually happens, environment (viewport, language, user state), a screenshot and the probable cause in the code (file:line); mark failures that also exist without the change as `pre-existing`.
+
+Write the rows to `checks` in `<stateDir>/<key>.json` (format in `shared.md`): the whole checklist of this run with `result` `pass` (✅), `fail` (❌) or `unchecked` (⚠️) and `mock`; a re-run after a fix updates only its rows.
 
 Under the table add a coverage line (counts per kind: positive / negative / edge / state / regression, and what was deliberately not covered) and, if the agent reported any, the «Дополнительные наблюдения» found outside the checklist. With `screenshots` = «Да» add the screenshot directory path.
 

@@ -19,6 +19,7 @@ These plugins are used across unrelated projects, and none of them may know anyt
 - `plugins/lp-code-review/` — skill `review`
 - `plugins/lp-code-test/` — skills `unit`, `e2e`
 - `plugins/lp-explain-code/` — skill `explain`
+- `plugins/lp-copy-bar/` — mod (TypeScript hooks module `hooks/register.tsx`, state contract `types/index.d.ts`, tests `hooks/*.test.tsx`): copy buttons above the prompt for the messages lp-task saved in `<stateDir>/<key>/messages/`. Check with `claude plugin validate` and `claude plugin test`
 
 ## Editing guidelines
 

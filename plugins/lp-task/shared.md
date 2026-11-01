@@ -27,6 +27,9 @@ Take all templates, paths and the project list only from the merged config.
 - `mrMessage.lines[]` — template of the team MR message, one element per line (see `references/mr-message.md`).
 - `mrMessage.link` — template of one MR link line in `{links}`.
 - `mrMessage.clipboard` — copy the MR message to the clipboard.
+- `howToTest.header` — first line of the tester message before the title (e.g. a mention of the testers); empty by default.
+- `howToTest.maxCases` — at most this many test cases in the tester message (default 8).
+- `howToTest.clipboard` — copy the tester message to the clipboard (default `true`).
 - `stateDir` — where the task state is stored: `<stateDir>/<key>.json`.
 - `review.postToMr` — `ask` (default): after a review of a GitLab MR offer to publish the findings as MR comments; `never`: do not offer.
 - `review.minSeverity` — lowest severity offered for publishing: `critical`, `high`, `medium` (default) or `low`.
@@ -95,10 +98,18 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
       "observedData": "the fields and values that drive the wrong result, e.g. GET /cart → item.status = CLOSED",
       "codePath": "src/entities/cart/lib/get-status.ts:42"
     }
+  ],
+  "checks": [
+    { "project": "web", "kind": "positive", "priority": "P1", "item": "Add an item to the cart", "where": "/cart", "expected": "the header counter grows by 1", "result": "pass", "mock": false }
+  ],
+  "criteria": [
+    { "criterion": "with item.status = CLOSED the cart shows «Недоступно»", "result": "pass" }
   ]
 }
 ```
 
 `plan` is the path of the plan file approved in `do` step 6 (null until then); the session context hook prints it after a compaction.
+
+`checks` is the last «Проверка» run of `test-browser` (rows of the checklist with `result` `pass` / `fail` / `unchecked`; a re-run after a fix updates its rows). `criteria` are the acceptance criteria of the last `lp-task-loop` run, written by `do`. Both are read by `how-to-test`.
 
 `reproduction` is written by `test-browser` in the «Обнаружение» mode (`reproduced`: `yes` / `no` / `unknown`) and read by `do` (plan, `Evidence:` for `lp-task-loop`) and by `test-browser` in the «Проверка» mode (the first checklist row).

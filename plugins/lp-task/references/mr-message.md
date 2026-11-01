@@ -34,4 +34,4 @@ Work chat apps usually turn `* ` / `- ` into a list only while typing, pasted pl
 
 Example of the default HTML: `<meta charset="utf-8"><div>@team</div><div>ACME-1: Title</div><div><br></div><ul><li>Web: <a href="https://…">https://…</a></li></ul>`.
 
-Copy only if `mrMessage.clipboard` is `true` and the OS is macOS: `osascript -l JavaScript "${CLAUDE_PLUGIN_ROOT}/scripts/copy-rich.js" "<html>" "<plain text>"` (plain text lines start at column 0, no leading spaces, no trailing newline). After that say in one line that the message is already in the clipboard and will paste into the work chat with formatting. Otherwise only print it.
+Save and copy the same way for every copyable message (`${CLAUDE_PLUGIN_ROOT}/references/clipboard.md`) with `kind` = `mr`: the files `<stateDir>/<key>/messages/mr.html` and `mr.txt`. Copy only if `mrMessage.clipboard` is `true`. After that say in one line that the message is already in the clipboard and will paste into the work chat with formatting. Otherwise only print it.

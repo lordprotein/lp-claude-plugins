@@ -1,0 +1,117 @@
+import { atom, read, update } from 'claude-code'
+import type { EngineInterface, Register } from 'claude-code'
+
+import type { Copy } from '../types'
+
+// Change the tag when the fields of Copy change: it declines what an earlier version stored.
+const copies = atom({ plugin: 'lp-copy-bar', key: 'copies' } as const, [], { shape: 'copies-1' })
+const isHidden = atom({ plugin: 'lp-copy-bar', key: 'isHidden' } as const, false)
+
+const STORE_KEY = 'recent'
+const MAX_KEPT = 6
+const LABELS: Record<string, string> = { mr: 'MR', 'how-to-test': 'Тестерам' }
+
+const ARG = String.raw`(?:"([^"]+)"|'([^']+)'|(\S+))`
+const COPY_CALL = new RegExp(String.raw`osascript\s+-l\s+JavaScript\s+${ARG}\s+${ARG}\s+${ARG}`)
+
+/** The lp-task copy call in a Bash command: `osascript -l JavaScript <copy-rich.js> <…/<key>/messages/<kind>.html> <….txt>`. */
+export const parseCopy = (command: string): Copy | null => {
+  const m = COPY_CALL.exec(command)
+  if (!m) return null
+  const pick = (i: number) => m[i] ?? m[i + 1] ?? m[i + 2] ?? ''
+  const script = pick(1)
+  const html = pick(4)
+  const txt = pick(7)
+  if (!script.endsWith('copy-rich.js')) return null
+  const parts = /\/([^/]+)\/messages\/([\w-]+)\.html$/.exec(html)
+  if (!parts || !txt.endsWith('.txt')) return null
+  return { key: parts[1] ?? '', kind: parts[2] ?? '', html, txt, script }
+}
+
+const label = (kind: string) => LABELS[kind] ?? kind
+
+const remember = (list: readonly Copy[], copy: Copy): Copy[] =>
+  [...list.filter(c => !(c.key === copy.key && c.kind === copy.kind)), copy].slice(-MAX_KEPT)
+
+/** Copies again with formatting through the same script; plain text through the terminal if that fails. */
+const copyAgain = async ($: EngineInterface, copy: Copy, surface?: Parameters<EngineInterface['ui']['copy']>[0]['surface']) => {
+  try {
+    const ran = await $.process.run(['osascript', '-l', 'JavaScript', copy.script, copy.html, copy.txt])
+    if (ran.exitCode === 0) {
+      $.ui.toast(`${copy.key}: «${label(copy.kind)}» скопировано`)
+      return true
+    }
+  } catch {
+    // falls through to the plain text copy
+  }
+  try {
+    const text = await $.fs.read(copy.txt)
+    const done = await $.ui.copy(surface ? { text, surface } : { text })
+    $.ui.toast(done.isCopied ? `${copy.key}: «${label(copy.kind)}» скопировано без форматирования` : `${copy.key}: не удалось скопировать`)
+    return done.isCopied
+  } catch {
+    $.ui.toast(`${copy.key}: файл сообщения не найден`)
+    return false
+  }
+}
+
+export const register: Register = on => {
+  on('session.start', async ($, e, next) => {
+    await $.command.register({
+      name: 'copy-last',
+      description: 'Copy the last lp-task message (MR or tester message) again, with formatting',
+    })
+    return next(e)
+  })
+
+  on('tool.call', { tool: 'Bash' }, async ($, e, next) => {
+    const ran = await next(e)
+    const copy = parseCopy(e.command)
+    if (copy && ran.deny === undefined && ran.isError !== true) {
+      await update($, copies, list => remember(list, copy))
+      await update($, isHidden, () => false)
+      const kept = await $.store.get(STORE_KEY)
+      await $.store.set(STORE_KEY, remember(Array.isArray(kept) ? (kept as Copy[]) : [], copy))
+    }
+    return ran
+  }).catch(($, e, next) => next(e))
+
+  on('command.run', { command: 'copy-last' }, async $ => {
+    const session = await read($, copies)
+    const kept = await $.store.get(STORE_KEY)
+    const last = session.at(-1) ?? (Array.isArray(kept) ? (kept as Copy[]).at(-1) : undefined)
+    if (!last) return { text: 'Сообщений lp-task для копирования пока нет.' }
+    const ok = await copyAgain($, last)
+    return { text: ok ? `Скопировано: ${last.key}, «${label(last.kind)}».` : `Не удалось скопировать ${last.key}.` }
+  })
+
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    const list = await read($, copies)
+    if (e.props.hasSurvey || list.length === 0 || (await read($, isHidden))) return next(e)
+
+    const { Box, Button, Text } = $.ui.resolve(e)
+    const keys = [...new Set(list.map(c => c.key))].slice(-2)
+
+    return (
+      <Box flexDirection="column">
+        {keys.map(key => (
+          <Box>
+            <Text dimColor>📋 {key}: </Text>
+            {list
+              .filter(c => c.key === key)
+              .map(c => (
+                <Button
+                  key={`copy:${c.key}:${c.kind}`}
+                  label={label(c.kind)}
+                  onPress={press => void copyAgain($, c, press.surface)}
+                />
+              ))}
+            {key === keys.at(-1) && (
+              <Button key="hide" label="×" onPress={() => update($, isHidden, () => true)} />
+            )}
+          </Box>
+        ))}
+      </Box>
+    )
+  })
+}

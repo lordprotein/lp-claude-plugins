@@ -30,6 +30,11 @@
       "name": "lp-explain-code",
       "description": "Code explanation: changes, files, functions, flows",
       "source": "./plugins/lp-explain-code"
+    },
+    {
+      "name": "lp-copy-bar",
+      "description": "Mod: buttons above the prompt that copy the lp-task messages again (MR, testers), and /copy-last",
+      "source": "./plugins/lp-copy-bar"
     }
   ]
 }
