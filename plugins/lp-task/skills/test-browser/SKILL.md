@@ -75,7 +75,7 @@ Forbidden: everything from `browserTest.forbiddenActions`; committing. If an ite
 
 ## Step 5a. Mocks for what could not be checked
 
-Only in the «Проверка» mode, when some rows came back `⚠️`: follow `${CLAUDE_PLUGIN_ROOT}/references/mocks.md`.
+Only in the «Проверка» mode, when some rows came back `⚠️`: follow `${CLAUDE_PLUGIN_ROOT}/references/mocks.md`. Do not ask the user: rows that a mock makes checkable are mocked and checked again right away.
 
 ## Step 6R. Reproduction report («Обнаружение»)
 
@@ -83,9 +83,11 @@ Follow `${CLAUDE_PLUGIN_ROOT}/references/reproduce.md` «Report», then go to st
 
 ## Step 6. Report («Проверка»)
 
-A table: project → kind → item → ✅ / ❌ / ⚠️ → short comment. For every ❌ — steps, what was expected, what actually happens, environment (viewport, language, user state), a screenshot and the probable cause in the code (file:line); mark failures that also exist without the change as `pre-existing`.
+A table: project → kind → item → result → short comment. The result is ✅ / ❌ / ⚠️, and for a row checked on a mock `✅ мок: <what was substituted>` / `❌ мок: <…>` (`references/mocks.md` «Result»), so it is never mistaken for a check on real data. For every ❌ — steps, what was expected, what actually happens, environment (viewport, language, user state), a screenshot and the probable cause in the code (file:line); mark failures that also exist without the change as `pre-existing`.
 
 Write the rows to `checks` in `<stateDir>/<key>.json` (format in `shared.md`): the whole checklist of this run with `result` `pass` (✅), `fail` (❌) or `unchecked` (⚠️) and `mock` (`null`, or what was substituted and why, from step 5a); a re-run after a fix updates only its rows.
+
+If any row was checked on a mock, add under the table one line «На моке: N строк» with the reasons the real data could not be used.
 
 Under the table add a coverage line (counts per kind: positive / negative / edge / state / regression, and what was deliberately not covered) and, if the agent reported any, the «Дополнительные наблюдения» found outside the checklist. With `screenshots` = «Да» add the screenshot directory path.
 
