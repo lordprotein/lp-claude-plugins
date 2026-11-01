@@ -1,6 +1,6 @@
 # MR message
 
-Used by `/lp-task:push` and `/lp-task:mr-copy`. Config keys: `mrMessage.*` in `shared.md`.
+Used by `/lp-task:push`. Config keys: `mrMessage.*` in `shared.md`.
 
 A ready-made message for the team with the MR links, built from `mrMessage.lines` and `mrMessage.link`. Defaults:
 
@@ -34,4 +34,4 @@ Work chat apps usually turn `* ` / `- ` into a list only while typing, pasted pl
 
 Example of the default HTML: `<meta charset="utf-8"><div>@team</div><div>ACME-1: Title</div><div><br></div><ul><li>Web: <a href="https://…">https://…</a></li></ul>`.
 
-Save and copy the same way for every copyable message (`${CLAUDE_PLUGIN_ROOT}/references/clipboard.md`) with `kind` = `mr`: the files `<stateDir>/<key>/messages/mr.html` and `mr.txt`. Copy only if `mrMessage.clipboard` is `true` or the command is `mr-copy`; then say in one line that the message is in the clipboard and will paste into the work chat with formatting. Otherwise only print and save it and say in one line that it is copied by the button above the prompt (`lp-copy-bar` mod) or `/lp-task:mr-copy`.
+Save and copy the same way for every copyable message (`${CLAUDE_PLUGIN_ROOT}/references/clipboard.md`) with `kind` = `mr`: the files `<stateDir>/<key>/messages/mr.html` and `mr.txt`. Copy only if `mrMessage.clipboard` is `true`; then say in one line that the message is in the clipboard and will paste into the work chat with formatting. Otherwise only print and save it and say in one line that it is copied by the button above the prompt (`lp-copy-bar` mod).

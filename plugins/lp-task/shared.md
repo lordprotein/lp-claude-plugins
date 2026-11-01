@@ -26,7 +26,7 @@ Take all templates, paths and the project list only from the merged config.
 - `mrMessage.header` — the value of `{header}` in the team MR message (e.g. a team mention).
 - `mrMessage.lines[]` — template of the team MR message, one element per line (see `references/mr-message.md`).
 - `mrMessage.link` — template of one MR link line in `{links}`.
-- `mrMessage.clipboard` — copy the MR message to the clipboard after `push` (default `false`: it is only saved, the `lp-copy-bar` mod or `/lp-task:mr-copy` copies it).
+- `mrMessage.clipboard` — copy the MR message to the clipboard after `push` (default `false`: it is only saved, the `lp-copy-bar` mod copies it).
 - `howToTest.header` — first line of the tester message before the title (e.g. a mention of the testers); empty by default.
 - `howToTest.maxCases` — at most this many test cases in the tester message (default 6; the cases still to check are never cut).
 - `howToTest.environment` — the «Стенд» line of the tester message (e.g. where the build is available); empty — no line.

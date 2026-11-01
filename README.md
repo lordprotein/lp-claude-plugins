@@ -4,7 +4,7 @@ Personal Claude Code marketplace.
 
 | Plugin | What's inside |
 |--------|---------------|
-| `lp-task` | `/lp-task:do`, `/lp-task:commit`, `/lp-task:push`, `/lp-task:sync-base`, `/lp-task:test-browser`, `/lp-task:mr-copy`, `/lp-task:how-to-test`, `/lp-task:init` |
+| `lp-task` | `/lp-task:do`, `/lp-task:commit`, `/lp-task:push`, `/lp-task:sync-base`, `/lp-task:test-browser`, `/lp-task:how-to-test`, `/lp-task:init` |
 | `lp-task-loop` | `/lp-task-loop:run` |
 | `lp-code-review` | `/lp-code-review:review` |
 | `lp-code-test` | `/lp-code-test:unit`, `/lp-code-test:e2e` |
