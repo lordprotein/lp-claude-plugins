@@ -8,6 +8,6 @@ export type Copy = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'lp-copy-bar': { copies: Shaped<Copy[]>; isHidden: boolean }
+    'lp-copy-bar': { copies: Shaped<Copy[]> }
   }
 }

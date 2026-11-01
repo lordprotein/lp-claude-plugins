@@ -5,11 +5,10 @@ import type { Copy } from '../types'
 
 // Change the tag when the fields of Copy change: it declines what an earlier version stored.
 const copies = atom({ plugin: 'lp-copy-bar', key: 'copies' } as const, [], { shape: 'copies-2' })
-const isHidden = atom({ plugin: 'lp-copy-bar', key: 'isHidden' } as const, false)
 
 const STORE_KEY = 'recent'
 const MAX_KEPT = 6
-const LABELS: Record<string, string> = { mr: 'MR', 'how-to-test': 'Тестерам' }
+const LABELS: Record<string, string> = { mr: 'MR', 'how-to-test': 'Сообщение для QA' }
 
 const ARG = String.raw`(?:"([^"]+)"|'([^']+)'|(\S+))`
 const COPY_CALL = new RegExp(String.raw`osascript\s+-l\s+JavaScript\s+${ARG}\s+${ARG}\s+${ARG}`)
@@ -80,7 +79,6 @@ const copyAgain = async ($: EngineInterface, copy: Copy, surface?: Parameters<En
 /** Remembers a message for the buttons (this session) and for /copy-last (across sessions). */
 const keep = async ($: EngineInterface, copy: Copy) => {
   await update($, copies, list => remember(list, copy))
-  await update($, isHidden, () => false)
   const kept = await $.store.get(STORE_KEY)
   await $.store.set(STORE_KEY, remember(Array.isArray(kept) ? (kept as Copy[]) : [], copy))
 }
@@ -121,7 +119,7 @@ export const register: Register = on => {
 
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     const list = await read($, copies)
-    if (e.props.hasSurvey || list.length === 0 || (await read($, isHidden))) return next(e)
+    if (e.props.hasSurvey || list.length === 0) return next(e)
 
     const { Box, Button, Text } = $.ui.resolve(e)
     const keys = [...new Set(list.map(c => c.key))].slice(-2)
@@ -140,9 +138,6 @@ export const register: Register = on => {
                   onPress={press => void copyAgain($, c, press.surface)}
                 />
               ))}
-            {key === keys.at(-1) && (
-              <Button key="hide" label="×" onPress={() => update($, isHidden, () => true)} />
-            )}
           </Box>
         ))}
       </Box>

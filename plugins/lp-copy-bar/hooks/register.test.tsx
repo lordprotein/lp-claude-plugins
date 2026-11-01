@@ -68,7 +68,8 @@ test('a copy call puts a button above the prompt, and the button copies again', 
 
   const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
   const button = await ui.find({ type: 'Button', key: 'copy:ACME-1:how-to-test' })
-  expect(button?.props.label).toBe('Тестерам')
+  expect(button?.props.label).toBe('Сообщение для QA')
+  expect(await ui.find({ type: 'Button', key: 'hide' })).toBeFalsy()
 
   await ui.press({ key: 'copy:ACME-1:how-to-test' })
   const argv = ran.at(-1) ?? []
