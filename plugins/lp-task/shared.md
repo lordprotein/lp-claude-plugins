@@ -44,6 +44,7 @@ Take all templates, paths and the project list only from the merged config.
   - `autoDetectOnly: true` — the project is not offered in the project selection; it is included automatically only if the research/plan showed that changes are needed there (typically a shared library);
   - `notes[]` — project-specific rules: when the project is involved and how to work with it.
 - `planNotes[]` — extra rules for the planning step (`do`, step 6).
+- `pushNotes[]` — extra rules for `push` and the MR message: how to split the task projects into MR groups (one message per group) and when a group may be pushed (e.g. a shared library first, the projects that use it only after its new version is published and set in them). See `skills/push/SKILL.md` «MR groups».
 - `browserTest.forbiddenActions[]` — actions never performed in the browser check.
 - `browserTest.mobileViewport` — `WIDTHxHEIGHT` for `mobile` projects.
 
@@ -87,7 +88,7 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
   "branch": "ACME-1296",
   "plan": "/abs/path/to/the/approved/plan.md",
   "projects": [
-    { "id": "web", "path": "/abs/path", "base": "main", "commit": null, "fixCommits": [], "pushed": false, "mr": null }
+    { "id": "web", "path": "/abs/path", "base": "main", "commit": null, "fixCommits": [], "pushed": false, "mr": null, "mrGroup": null }
   ],
   "reproduction": [
     {
@@ -109,6 +110,8 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
   ]
 }
 ```
+
+`mrGroup` is the id of the MR group the project belongs to when `pushNotes` split the MRs (null otherwise); `push` writes it.
 
 `plan` is the path of the plan file approved in `do` step 6 (null until then); the session context hook prints it after a compaction.
 

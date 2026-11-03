@@ -36,6 +36,7 @@
   },
   "projects": [],
   "planNotes": [],
+  "pushNotes": [],
   "browserTest": {
     "forbiddenActions": [
       "real payments and any other money actions",

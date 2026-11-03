@@ -21,9 +21,18 @@ As in `shared.md` «Which task». Filter for step 4: state files that have proje
 
 Before the first push create `<stateDir>/<key>.push-allowed`, after the last push (or a failure) remove it (`shared.md` «Push marker»). Without it the plugin hook denies the push.
 
+## MR groups
+
+Read `pushNotes` from the config. If they are empty or do not apply to this task — there is one group, nothing changes, the message `kind` is `mr`.
+
+Otherwise follow them:
+1. Split the task projects into the groups the rules name; write the group id (latin letters, digits and `-`) to `mrGroup` of every project in the state. A project already pushed keeps its group.
+2. For every group whose rule has a condition (e.g. «after the new library version is published and set in the apps»), check the condition in the repositories (package.json, lock file, registry, the state of the earlier group's MR). A group whose condition does not hold waits: its projects are not pushed in this run. If the condition cannot be checked — ask (AskUserQuestion), header «Группа MR»: «Группа <group> ждёт: <condition>» — «Подождать» / «Пушить».
+3. Push the groups in the order of the rules.
+
 ## Push
 
-For every project of the task that has commits:
+For every project of the task that has commits (and whose MR group does not wait):
 
 1. Compare `git -C <path> branch --show-current` with the task branch. If they differ — show it and ask.
 2. Uncommitted changes (`status --short`, ignoring `git.ignorePaths`) — warn and suggest `/lp-task:commit` first.
@@ -41,16 +50,17 @@ For every project of the task that has commits:
 5. Take the link from the output (or from the state for an existing MR): `.../-/merge_requests/<id>` for GitLab, `.../pull/<id>` for GitHub. Look for it in the whole output (`remote: ...` lines), do not truncate the output with `tail`/`head`. If the link cannot be found — say so and ask the user for the link; do not substitute a link to a filtered MR list.
 6. If the branch existed on the remote before the first push of this task (the MR is not from the state) — warn: GitLab push options do not change the target of an existing MR, it has to be checked manually.
 
-If the task includes a shared library project (`autoDetectOnly`) — remind that the MRs of the dependent projects depend on publishing a new library version.
+If `pushNotes` are empty and the task includes a shared library project (`autoDetectOnly`) — remind that the MRs of the dependent projects depend on publishing a new library version.
 
 ## Result
 
-Update the state (`pushed`, `mr`) and print a table:
+Update the state (`pushed`, `mr`, `mrGroup`) and print a table (the «Группа» column only when there are MR groups; a waiting project has «ждёт: <condition>» instead of the link):
 
-| Проект | Target | MR |
-|---|---|---|
-| Web | main | https://… |
+| Проект | Группа | Target | MR |
+|---|---|---|---|
+| UI kit | kit | main | https://… |
+| Web | apps | main | ждёт: версия ui-kit не опубликована |
 
 And separately all the links as a list, so they are easy to copy.
 
-Then build, print and copy the MR message per `${CLAUDE_PLUGIN_ROOT}/references/mr-message.md`. Finish with one line: «Для тестеров — `/lp-task:how-to-test`».
+Then build, print and copy the MR message per `${CLAUDE_PLUGIN_ROOT}/references/mr-message.md` (one per MR group that got a new MR). If a group waits — say in one line what unblocks it and that the next step is a commit with the change (`/lp-task:commit`), then `/lp-task:push` again. Finish with one line: «Для тестеров — `/lp-task:how-to-test`».

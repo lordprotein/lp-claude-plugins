@@ -34,4 +34,10 @@ Work chat apps usually turn `* ` / `- ` into a list only while typing, pasted pl
 
 Example of the default HTML: `<meta charset="utf-8"><div>@team</div><div>ACME-1: Title</div><div><br></div><ul><li>Web: <a href="https://…">https://…</a></li></ul>`.
 
-Save and copy the same way for every copyable message (`${CLAUDE_PLUGIN_ROOT}/references/clipboard.md`) with `kind` = `mr`: the files `<stateDir>/<key>/messages/mr.html` and `mr.txt`, both written with the Write tool (a shell write is denied by the plugin hook, and the `lp-copy-bar` button appears only for Write calls). Copy only if `mrMessage.clipboard` is `true`; then say in one line that the message is in the clipboard and will paste into the work chat with formatting. Otherwise only print and save it and say in one line that it is copied by the button above the prompt (`lp-copy-bar` mod).
+## MR groups
+
+When `push` split the task into MR groups (`skills/push/SKILL.md` «MR groups»), build one message per group from the same template: `{links}` holds only the projects of that group. Save it with `kind` = `mr-<group>` (the group id: latin letters, digits and `-`, e.g. `mr-kit`); the `lp-copy-bar` button reads «MR <group>». Build and save only the messages of the groups that got a new MR in this run; a message saved by an earlier run stays as it is. Without groups the `kind` is `mr`.
+
+## Save
+
+Save and copy the same way for every copyable message (`${CLAUDE_PLUGIN_ROOT}/references/clipboard.md`) with `kind` = `mr` (or `mr-<group>`): the files `<stateDir>/<key>/messages/<kind>.html` and `<kind>.txt`, both written with the Write tool (a shell write is denied by the plugin hook, and the `lp-copy-bar` button appears only for Write calls). Copy only if `mrMessage.clipboard` is `true`; then say in one line that the message is in the clipboard and will paste into the work chat with formatting. Otherwise only print and save it and say in one line that it is copied by the button above the prompt (`lp-copy-bar` mod).

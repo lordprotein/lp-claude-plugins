@@ -69,6 +69,7 @@
 | `review.gitlab.mcpServer` | `gitlab` | Для `/lp-code-review:review`. Имя GitLab MCP сервера; запасной вариант `glab` |
 | `projects[]` | текущий репозиторий | `id`, `label`, `path`, `pm`, `lint`, `dev`, `mobile`, `autoDetectOnly`, `notes[]` |
 | `planNotes[]` | `[]` | Дополнительные правила для шага планирования |
+| `pushNotes[]` | `[]` | Правила для push и MR-сообщения: деление MR на группы и когда группу можно пушить (см. «Несколько MR») |
 | `browserTest.forbiddenActions[]` | платежи, ввод учётных данных, необратимые действия с аккаунтом | Что никогда не делается при проверке в браузере |
 | `browserTest.mobileViewport` | `390x844` | Размер экрана для проектов с `mobile` |
 
@@ -83,6 +84,19 @@
 ```
 
 `autoDetectOnly: true` помечает проект (обычно общую библиотеку), который не предлагается при выборе проектов, но добавляется автоматически, если исследование показало, что задача его затрагивает.
+
+### Несколько MR
+
+`pushNotes` описывают обычным текстом, как проект выпускает MR. Например, общая библиотека живёт в отдельном репозитории, а приложения берут её опубликованную версию: тогда сначала нужен MR только в библиотеку, а MR в приложения идёт после того, как новая версия опубликована и прописана в них.
+
+```json
+"pushNotes": [
+  "If the task changes ui-kit, split the MRs into two groups: `kit` (only ui-kit) and `apps` (the other task projects); otherwise one group",
+  "Push `kit` first. Push `apps` only when the published @acme/ui-kit version with the task changes is set in the package.json of every app of the task; until then the apps wait"
+]
+```
+
+`/lp-task:push` пушит только группы, для которых условие выполнено, остальные помечает «ждёт». Когда версия опубликована и поднята коммитом (`/lp-task:commit`), повторный `/lp-task:push` пушит следующую группу. На каждую группу сохраняется своё сообщение `mr-<группа>`, и мод `lp-copy-bar` показывает для него отдельную кнопку («MR kit», «MR apps»). Без `pushNotes` всё как раньше: одно сообщение `mr`.
 
 ## Правила безопасности
 

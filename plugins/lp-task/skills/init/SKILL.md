@@ -30,7 +30,7 @@ Ask with AskUserQuestion (several questions per call, at most 4), suggest values
 4. MR message header (e.g. a team mention) — empty by default.
 5. Projects: the current repository by default; offer the sibling git repositories of the chosen folder (for «В родительской папке»). For every project detect `pm` by the lock file (`yarn.lock` → yarn, `pnpm-lock.yaml` → pnpm, `package-lock.json` → npm, `bun.lockb` → bun) and ask only about `label`, `mobile` and `autoDetectOnly` when it is not obvious.
 
-Do not ask about `planNotes`, `projects[].notes`, `browserTest` — say that they can be added to the file by hand (point to `config.example.json`).
+Do not ask about `planNotes`, `pushNotes`, `projects[].notes`, `browserTest` — say that they can be added to the file by hand (point to `config.example.json`).
 
 ## Step 3. Save
 
