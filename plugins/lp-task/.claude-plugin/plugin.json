@@ -1,6 +1,6 @@
 {
   "name": "lp-task",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "description": "Skills /lp-task:do (tracker task → project selection → plan → branches → implementation, optionally in the autonomous lp-task-loop), /lp-task:test-browser (browser run via Chrome MCP or Playwright: reproduce the bug before the fix or check the changes), /lp-task:commit (commit the task changes in all of its projects, then offer to push), /lp-task:push (push + MR/PR, optionally in MR groups with their own messages from pushNotes), /lp-task:sync-base (rebase the task branches onto the updated base), /lp-task:how-to-test (message for testers: where and in which states to check, checked test cases, saved for copying) and /lp-task:init (create a project config); hooks that enforce the push, attribution, stash and message-file (Write only) rules and restore the task context after compaction; bin/lp-stop-port",
   "author": {
     "name": "lordprotein"

@@ -50,7 +50,7 @@ Take all templates, paths and the project list only from the merged config.
 
 ## Hard rules (always)
 
-1. **Never push without an explicit user command** (`/lp-task:push`, «запушь», «push», or the answer «Да» to the question «Запушить изменения?» in `/lp-task:commit`). All commits are made only via `/lp-task:commit`; fixes — only as new commits, no amend. The plugin hook enforces it: on a task branch `git push` is denied unless the push marker exists (see «Push marker»).
+1. **Never push without an explicit user command** (`/lp-task:push`, «запушь», «push», or the answer «Да» to the question «Запушить изменения?» in `/lp-task:commit`). A push asked for in words still follows `skills/push/SKILL.md` step by step (MR groups, the state, the MR message), never a bare `git push`. All commits are made only via `/lp-task:commit`; fixes — only as new commits, no amend. The plugin hook enforces it: on a task branch `git push` is denied unless the push marker exists (see «Push marker»).
 2. **Never mention Claude / Claude Code** in commits and MRs: no `Co-Authored-By`, no «Generated with», no AI attribution of any kind. The commit message is only the line built from the template.
 3. **Never run `git stash pop` / `git stash drop` / `git reset --hard` / `git checkout -- .` / `git restore`** on changes that were not made by you in this task without explicit permission. If a stash is needed — create it with the message `lp-task <key>` and before `pop` check with `git stash list` that `stash@{0}` is exactly yours. If `git stash` printed «No local changes to save» — the stash was NOT created, `pop` must not be run.
 4. Run all git commands via `git -C <path>` with absolute paths.
@@ -112,6 +112,8 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
 ```
 
 `mrGroup` is the id of the MR group the project belongs to when `pushNotes` split the MRs (null otherwise); `push` writes it.
+
+A project that joins the task after the plan (e.g. a follow-up request moves shared code into an `autoDetectOnly` library) is added to `projects` right away, before its first commit: `id`, the worktree `path`, `base`, `commit: null`, `pushed: false`, `mr: null`. `commit`, `push`, the MR groups and `how-to-test` see only the projects listed here.
 
 `plan` is the path of the plan file approved in `do` step 6 (null until then); the session context hook prints it after a compaction.
 

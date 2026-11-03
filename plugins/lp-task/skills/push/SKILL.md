@@ -63,4 +63,4 @@ Update the state (`pushed`, `mr`, `mrGroup`) and print a table (the «Групп
 
 And separately all the links as a list, so they are easy to copy.
 
-Then build, print and copy the MR message per `${CLAUDE_PLUGIN_ROOT}/references/mr-message.md` (one per MR group that got a new MR). If a group waits — say in one line what unblocks it and that the next step is a commit with the change (`/lp-task:commit`), then `/lp-task:push` again. Finish with one line: «Для тестеров — `/lp-task:how-to-test`».
+Then build, print and copy the MR message per `${CLAUDE_PLUGIN_ROOT}/references/mr-message.md` (one per MR group that got a new MR or has no saved `mr-<group>` message yet, see «MR groups» there). If a group waits — say in one line what unblocks it and that the next step is a commit with the change (`/lp-task:commit`), then `/lp-task:push` again. Finish with one line: «Для тестеров — `/lp-task:how-to-test`».

@@ -82,9 +82,32 @@ const copyAgain = async ($: EngineInterface, copy: Copy, surface?: Parameters<En
   }
 }
 
-/** Remembers a message for the buttons (this session) and for /copy-last (across sessions). */
+/**
+ * The other messages of the same task already saved in its `messages/` folder (an earlier session, or a message
+ * written before the plugin reloaded), oldest first: a kind counts when both its `.html` and `.txt` are there.
+ */
+const savedSiblings = async ($: EngineInterface, copy: Copy): Promise<Copy[]> => {
+  const dir = copy.html.slice(0, copy.html.lastIndexOf('/'))
+  try {
+    const entries = await $.fs.list(dir)
+    const files = new Map(entries.filter(f => f.kind === 'file').map(f => [f.name, f.mtimeMs]))
+    return [...files.keys()]
+      .filter(name => name.endsWith('.html') && files.has(`${name.slice(0, -5)}.txt`))
+      .sort((a, b) => (files.get(a) ?? 0) - (files.get(b) ?? 0))
+      .map(name => parseMessageFile(`${dir}/${name}`))
+      .filter((c): c is Copy => c !== null && c.kind !== copy.kind)
+  } catch {
+    return []
+  }
+}
+
+/** Remembers a message for the buttons (this session, with the task's other saved messages) and for /copy-last (across sessions). */
 const keep = async ($: EngineInterface, copy: Copy) => {
-  await update($, copies, list => remember(list, copy))
+  const siblings = await savedSiblings($, copy)
+  await update($, copies, list => {
+    const known = siblings.filter(s => !list.some(c => c.key === s.key && c.kind === s.kind))
+    return remember([...list, ...known], copy)
+  })
   const kept = await $.store.get(STORE_KEY)
   await $.store.set(STORE_KEY, remember(Array.isArray(kept) ? (kept as Copy[]) : [], copy))
 }

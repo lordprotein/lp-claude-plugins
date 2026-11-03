@@ -57,6 +57,34 @@ test('every MR group gets its own button', async ($, on) => {
   await ui.unmount()
 })
 
+test('a saved message brings back the other messages the task saved earlier', async ($, on) => {
+  on('tool.call', () => ({ result: {} }))
+  const file = (name: string, mtimeMs: number) => ({ name, kind: 'file' as const, size: 1, mtimeMs, isLink: false })
+  on('fs.list', (_, e) => ({
+    value:
+      e.path === '/state/ACME-4/messages'
+        ? [
+            file('mr.html', 1),
+            file('mr.txt', 1),
+            file('how-to-test.html', 2),
+            file('how-to-test.txt', 2),
+            file('draft.html', 3),
+            file('mr-kit.html', 4),
+            file('mr-kit.txt', 4),
+          ]
+        : [],
+  }))
+
+  await $.tool.call({ tool: 'Write', file_path: '/state/ACME-4/messages/mr-kit.html', content: '<b>kit</b>' })
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await ui.find({ type: 'Button', key: 'copy:ACME-4:mr' }))?.props.label).toBe('MR')
+  expect((await ui.find({ type: 'Button', key: 'copy:ACME-4:how-to-test' }))?.props.label).toBe('Сообщение для QA')
+  expect((await ui.find({ type: 'Button', key: 'copy:ACME-4:mr-kit' }))?.props.label).toBe('MR kit')
+  expect(await ui.find({ type: 'Button', key: 'copy:ACME-4:draft' })).toBeFalsy()
+  await ui.unmount()
+})
+
 test('a saved message without a copy puts a button above the prompt', async ($, on) => {
   const ran: string[][] = []
   on('tool.call', () => ({ result: {} }))

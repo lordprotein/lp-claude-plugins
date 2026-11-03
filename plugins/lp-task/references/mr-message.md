@@ -36,7 +36,7 @@ Example of the default HTML: `<meta charset="utf-8"><div>@team</div><div>ACME-1:
 
 ## MR groups
 
-When `push` split the task into MR groups (`skills/push/SKILL.md` «MR groups»), build one message per group from the same template: `{links}` holds only the projects of that group. Save it with `kind` = `mr-<group>` (the group id: latin letters, digits and `-`, e.g. `mr-kit`); the `lp-copy-bar` button reads «MR <group>». Build and save only the messages of the groups that got a new MR in this run; a message saved by an earlier run stays as it is. Without groups the `kind` is `mr`.
+When `push` split the task into MR groups (`skills/push/SKILL.md` «MR groups»), build one message per group from the same template: `{links}` holds only the projects of that group. Save it with `kind` = `mr-<group>` (the group id: latin letters, digits and `-`, e.g. `mr-kit`); the `lp-copy-bar` button reads «MR <group>». Build and save the message of every group that got a new MR in this run or has no saved `mr-<group>` message yet; a `mr-<group>` message saved by an earlier run stays as it is. The second case covers a task that was split into groups after some of its MRs already existed (e.g. a shared library joined the task later): those MRs got the single `mr` message then, and their group still needs its own `mr-<group>`. Without groups the `kind` is `mr`.
 
 ## Save
 
