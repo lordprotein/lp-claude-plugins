@@ -57,8 +57,9 @@ Take all templates, paths and the project list only from the merged config.
 6. Force push — only `--force-with-lease=<branch>:<expected sha>` and only with the user's confirmation.
 7. Accompany every step with a short summary: what was done and what is next.
 8. In browser checks never perform anything from `browserTest.forbiddenActions` and never type credentials — ask the user to log in.
+9. Write the message files `<stateDir>/<key>/messages/<kind>.html|.txt` only with the Write tool, never from the shell: the `lp-copy-bar` mod shows the copy button only for Write calls (`references/clipboard.md`).
 
-Plugin hooks (`hooks/hooks.json`) back rules 1–3: a commit message with AI attribution is denied, a push on a task branch without the push marker is denied, `git stash pop` in a task repository is denied when `stash@{0}` is not `lp-task <key>`. A denied command is not retried in another form: say what the hook reported.
+Plugin hooks (`hooks/hooks.json`) back rules 1–3 and 9: a commit message with AI attribution is denied, a push on a task branch without the push marker is denied, `git stash pop` in a task repository is denied when `stash@{0}` is not `lp-task <key>`, a shell command that writes into `<stateDir>/…/messages` is denied. A denied command is not retried in another form: say what the hook reported.
 
 ## Push marker
 
