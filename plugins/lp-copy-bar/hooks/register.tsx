@@ -7,7 +7,7 @@ import type { Copy } from '../types'
 const copies = atom({ plugin: 'lp-copy-bar', key: 'copies' } as const, [], { shape: 'copies-2' })
 
 const STORE_KEY = 'recent'
-const MAX_KEPT = 6
+const MAX_KEPT = 8
 const LABELS: Record<string, string> = { mr: 'MR', 'how-to-test': 'Сообщение для QA' }
 
 const ARG = String.raw`(?:"([^"]+)"|'([^']+)'|(\S+))`
@@ -49,7 +49,13 @@ const COPY_RICH = [
   '}',
 ].join('\n')
 
-const label = (kind: string) => LABELS[kind] ?? kind
+/** Button label: a known kind, `mr-<group>` as «MR <group>» (one MR message per group), otherwise the raw name. */
+export const label = (kind: string): string => {
+  const known = LABELS[kind]
+  if (known) return known
+  const group = /^mr-(.+)$/.exec(kind)?.[1]
+  return group ? `MR ${group.replaceAll('-', ' ')}` : kind
+}
 
 const remember = (list: readonly Copy[], copy: Copy): Copy[] =>
   [...list.filter(c => !(c.key === copy.key && c.kind === copy.kind)), copy].slice(-MAX_KEPT)

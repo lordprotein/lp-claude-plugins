@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { parseCopy, parseMessageFile } from './register'
+import { label, parseCopy, parseMessageFile } from './register'
 
 const BAND = {
   plugin: 'lp-copy-bar',
@@ -35,6 +35,26 @@ test('parses a saved message file', () => {
   expect(parseMessageFile('/state/ACME-1/messages/mr.txt')).toEqual(copy)
   expect(parseMessageFile('/state/ACME-1/notes/mr.html')).toBe(null)
   expect(parseMessageFile('/src/index.html')).toBe(null)
+})
+
+test('labels the message kinds', () => {
+  expect(label('mr')).toBe('MR')
+  expect(label('how-to-test')).toBe('Сообщение для QA')
+  expect(label('mr-kit')).toBe('MR kit')
+  expect(label('mr-shared-lib')).toBe('MR shared lib')
+  expect(label('notes')).toBe('notes')
+})
+
+test('every MR group gets its own button', async ($, on) => {
+  on('tool.call', () => ({ result: {} }))
+
+  await $.tool.call({ tool: 'Write', file_path: '/state/ACME-3/messages/mr-kit.html', content: '<b>kit</b>' })
+  await $.tool.call({ tool: 'Write', file_path: '/state/ACME-3/messages/mr-clients.html', content: '<b>clients</b>' })
+
+  const ui = await $.ui.mount({ ...BAND, surface: 'terminal' })
+  expect((await ui.find({ type: 'Button', key: 'copy:ACME-3:mr-kit' }))?.props.label).toBe('MR kit')
+  expect((await ui.find({ type: 'Button', key: 'copy:ACME-3:mr-clients' }))?.props.label).toBe('MR clients')
+  await ui.unmount()
 })
 
 test('a saved message without a copy puts a button above the prompt', async ($, on) => {

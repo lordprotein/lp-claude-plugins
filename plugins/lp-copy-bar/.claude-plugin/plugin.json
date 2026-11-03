@@ -1,7 +1,7 @@
 {
   "name": "lp-copy-bar",
-  "version": "0.3.0",
-  "description": "Mod: a row above the prompt with buttons that copy the lp-task messages (team MR message, tester message) again with formatting, and the /copy-last command",
+  "version": "0.4.0",
+  "description": "Mod: a row above the prompt with buttons that copy the lp-task messages (team MR message, one per MR group, tester message) again with formatting, and the /copy-last command",
   "author": {
     "name": "lordprotein"
   },

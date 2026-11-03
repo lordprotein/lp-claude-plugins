@@ -33,7 +33,7 @@
     },
     {
       "name": "lp-copy-bar",
-      "description": "Mod: buttons above the prompt that copy the lp-task messages again (MR, testers), and /copy-last",
+      "description": "Mod: buttons above the prompt that copy the lp-task messages again (MR, one or several, testers), and /copy-last",
       "source": "./plugins/lp-copy-bar"
     }
   ]
