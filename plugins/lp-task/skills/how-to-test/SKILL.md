@@ -1,6 +1,6 @@
 ---
 name: how-to-test
-description: Build a short message for the testers (QA) of a task and save it for copying: what changed, where and in which states to check, the test cases already checked. Use when the user asks how to test the changes or what to give the testers («как тестировать», «для тестеров», «что отдать QA», «где проверить эти изменения», «how to test»)
+description: Build a short message for the testers (QA) of a task and save it for copying: the affected areas of the app with a severity mark, before / after, extra changes made during the task, the cases to check with where, steps and expected result. Use when the user asks how to test the changes or what to give the testers («как тестировать», «для тестеров», «что отдать QA», «где проверить эти изменения», «how to test»)
 argument-hint: "[task key]"
 ---
 
@@ -10,7 +10,7 @@ Arguments: `$ARGUMENTS`
 
 First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
 
-Read-only for the repositories: nothing is changed, committed or pushed. The message is for testers, not developers: places and behaviour in the words of the UI, no file paths and no module names. A tester must be able to act on every case without asking: where to go, what to do, what to see. What we did not check comes first.
+Read-only for the repositories: nothing is changed, committed or pushed. The message tells testers what to check, never what the developers already checked. Places and behaviour in the words of the UI, no file paths, no component or module names. Technical values (enum values, statuses, fields of objects and API responses, variants, flag and role names, query parameters, error codes) are written exactly as in the code, in backticks, never translated. A tester must be able to act on every case without asking.
 
 ## Which task
 
@@ -18,83 +18,74 @@ As in `shared.md` «Which task». Filter for step 4: state files with at least o
 
 ## Collect
 
-1. **Task.** Summary and description from the context, or by `${CLAUDE_PLUGIN_ROOT}/references/read-task.md`; acceptance criteria and the bug steps if the task has them.
-2. **Impact map.** For every project of the task with changes: `${CLAUDE_PLUGIN_ROOT}/references/impact.md` (addresses of the places, states, nearby places). Changes already in the context need not be read again.
-3. **Cases.** One case per scenario, from these sources in this order:
-   - `reproduction`: the bug scenario (its expected result is now required);
-   - `checks`: P1 rows first, then P2;
-   - `criteria`: only those not already covered;
-   - states from the impact map that no case covers yet become cases too;
-   - if the state has nothing, write 3 to 6 cases from the task and the impact map: they count as not checked.
+Run independent commands of different projects in parallel (one message, several calls).
 
-   Merge variants of one scenario into one case (several projects, tabs or versions of the page go into its «Где»), never «сценарий 1 в классике» as a separate case. Split the cases in two groups:
-   - **to check:** result `fail` or `unchecked`, rows checked on a mock (even with `pass`: the real data was not seen), and cases written from the diff only;
-   - **checked:** result `pass`.
-
-   At most `howToTest.maxCases` (default 6) cases in total, the «to check» group first and never cut; the checked ones that do not fit become one line «Ещё N проверок пройдено: <2-4 words each>».
-4. **Every case** has a title of 3 to 7 words (what is checked) and up to 4 sub-items, each one line:
-   - `Где:` the address from the impact map: page or URL, the click path, what to look at; the variants of the scenario;
-   - `Шаги:` what to do to reach the state, with a hint where to find such data (`любой товар со скидкой`); for a checked case only if not obvious from the title and «Где»;
-   - `Ожидаемо:` the exact text or look in the interface; for a fix also «(раньше было …)»;
-   - `Почему не проверили:` only in the «to check» group, 2 to 6 words (`не дождались конца события`, `ошибка: <what was seen>`);
-   - `На моке:` for a case checked on a mock, instead of «Почему не проверили»: what was substituted and why, from `mock` of the row (`подменили ответ корзины: на стенде нет закрытых товаров`), and the result on the mock (`на моке ✅`). The tester must see that the real data was not checked.
-5. **Autotests.** Test files changed in the diff (`*.test.*`, `*.spec.*`, `__tests__/`): one line with counts (added, updated, removed). Omit if none.
-6. **Not affected.** Projects of the config without changes in this task that a tester could expect to be affected (the same feature on another platform, a mobile version): one line «Не затронуто: <labels>». Omit otherwise.
-7. **Conditions.** Only what is needed to reach the states: feature flags, roles, test data, a shared library MR that must be published first. Omit if none.
-8. **Stand.** `howToTest.environment` if it is set. Omit otherwise.
+1. **Task.** `title` and the `plan` file from the state. Only without a plan: the task by `${CLAUDE_PLUGIN_ROOT}/references/read-task.md` (Jira with `view: "compact"`).
+2. **Impact map** per project with changes, by `${CLAUDE_PLUGIN_ROOT}/references/impact.md` (cache first). It gives the areas with severity, the risks, API changes, states and the test file counts.
+3. **Extra changes («Доработки»).** What was added, fixed or extended beyond the original task: `git -C <path> log --format=%s <sha>` of every `fixCommits` sha, projects added after the plan, changes in the diff that neither the plan nor the task mention. Each one gets the severity of its area.
+4. **Cases.** One case per scenario, sources in this order: `reproduction` (its expected result is now required), `checks` (P1 first), `criteria` not yet covered, every 🟡/🔴 extra change, every 🔴/🟡 area or risk no case covers yet. Results (`pass`, `fail`, mocks) are not shown: a `mock.why` becomes a neutral data hint in the steps (`нужен закрытый товар`). Without any state data, write 3 to 6 cases from the task and the map. Variants of one scenario (projects, tabs, states, enum values) are one case. Sort 🔴 → 🟢. At most `howToTest.maxCases` (default 6); 🔴 and 🟡 cases are never cut, the 🟢 ones that do not fit become one line «Также: <2-4 words each>».
+5. **Not a bug.** What the task or the plan says stays unchanged on purpose, so testers do not file it. Omit if nothing.
+6. **Data and conditions.** Only what is needed to reach the states: feature flags, roles, test data, how to get a needed status, a shared library MR to publish first, clearing the cache or logging in again when storage changed. Omit if none.
 
 ## Message
 
-Plain text, empty blocks are not printed, the order is fixed:
+Plain text, Russian, short phrases, empty blocks are not printed, the order is fixed:
 
 ```
 {howToTest.header}
 🧪 Для тестирования
-Задача: {issueUrl} · MR: {label} {url}, {label} {url}
 Стенд: {howToTest.environment}
 
-Что изменилось: 1-2 sentences in the words of the UI, «было … → стало …» for a fix.
+Затронуто:
+🔴 <area>, <block>: <what changed, 2-6 words> (<page>)
 
-Нужно проверить:
-1. {case title}
-   • Где: …
-   • Шаги: …
-   • Ожидаемо: …
-   • Почему не проверили: …
-2. {case title}
-   • Где: …
-   • Ожидаемо: …
-   • На моке: подменили <what>, потому что <why>; на моке ✅
+Что изменилось:
+| До | После |
+| <before> | <after> |
 
-Проверено разработкой:
-3. {case title} ✅
-   • Где: …
-   • Ожидаемо: …
-Ещё N проверок пройдено: …
+Доработки:
+• 🟡 Добавили: <what> (<page>)
 
-Состояния:
-• only states that no case covers
+Проверить:
+1. 🔴 <case title, 3-7 words>
+   • Где:
+     1) <area>, <block> → <element> (<page>)
+   • Шаги:
+     1) <one action>
+   • ОР:
+     ◦ <exact text or look> (раньше было …)
+   • Варианты:
+     ◦ `status: CLOSED`
+Также: …
 
-Рядом может сломаться:
-• nearby places, one per line
+Потенциально может сломаться:
+• 🔴 <area>, <block>: <why, a few words> (<page>)
 
-Не затронуто: …
-Автотесты: …
-Условия: …
+API: `<METHOD> <path>`: <what changed in the request or response>
+Данные и условия: …
+Не баг: …
+Автотесты: добавлено N, обновлено N, удалено N
+
+🟢 косметика · 🟡 логика одной фичи · 🔴 общий код, деньги, доступы, API
 ```
 
-- Russian, short phrases. The case numbers run through both groups. A group with no cases is not printed.
-- `Задача` without `issueUrl` keeps only the key; `MR` lists only projects with `mr`; with one project the label is omitted everywhere.
-- Target: about 35 lines. If it is longer, cut the checked cases first (into the «Ещё N» line), then «Рядом может сломаться», never the «to check» group, the header or the links.
+- `<page>`: the route path without domain and protocol, a sample value for parameters (`/product/123`); several pages comma separated; a widget everywhere: `все страницы`. With several projects add the project label before the page (`Web: /cart`); with one project no labels.
+- «Затронуто»: one line per area of the map, 🔴 first.
+- «Что изменилось»: one row per change of behaviour, 1 to 4 rows; `нет` in «До» for something new.
+- A case has «Где» (numbered, one place per item), «Шаги» (numbered, one action per item, 2 to 6; omit if obvious from «Где»), «ОР» (bulleted, one result per item, the exact UI text; «(раньше было …)» for a fix), «Варианты» (bulleted, omit if none).
+- «API» lists changed requests and fields, also analytics events if the diff changes them; one line per request when several.
+- The legend line is printed only if the message has a severity mark.
+- Target: about 35 lines without the nested items of cases. If longer: cut 🟢 cases into «Также», then 🟢 risks; never 🔴 or 🟡.
 
-HTML from the same lines by the HTML rules of `${CLAUDE_PLUGIN_ROOT}/references/mr-message.md`, plus:
-- block titles («Нужно проверить:», «Проверено разработкой:», «Состояния:», «Рядом может сломаться:» and the one-line labels «Стенд:», «Что изменилось:», «Не затронуто:», «Автотесты:», «Условия:») in `<b>`;
-- the cases of both groups as `<ol>` (the second one with `start` continuing the numbering), every case an `<li>` with its title and a nested `<ul>` of its sub-items, the label of a sub-item (`Где:`, `Шаги:`, `На моке:`, …) in `<b>`;
-- the `•` lines of «Состояния» and «Рядом может сломаться» as `<ul>`;
-- every URL as a link, `&`, `<`, `>` escaped.
+HTML from the same content (the HTML rules of `${CLAUDE_PLUGIN_ROOT}/references/mr-message.md`: `<meta charset="utf-8">`, `<div>` per line, escaping), plus:
+- block titles and the labels of one-line blocks and case sub-items (`Где:`, `Шаги:`, `ОР:`, `Варианты:`) in `<b>`;
+- backticked values as `<code>`;
+- «Что изменилось» as `<table border="1">` with `<th>До</th><th>После</th>`;
+- «Затронуто», «Доработки», «Потенциально может сломаться» as `<ul>` (marker kept in the text);
+- cases as one `<ol>`, each `<li>` the title and a `<ul>` of sub-items; inside them «Где» and «Шаги» as `<ol>`, «ОР» and «Варианты» as `<ul>`.
 
-The plain text keeps the same structure: sub-items indented by three spaces and starting with `• `.
+Plain text indentation: sub-items 3 spaces and `• `, their items 5 spaces and `1)` or `◦ `.
 
 ## Save and copy
 
-Do not ask whether to copy (the `lp-copy-bar` mod shows a copy button for the saved message). Print the plain text in a code block, then save by `${CLAUDE_PLUGIN_ROOT}/references/clipboard.md` with `kind` = `how-to-test` (both files with the Write tool: a shell write is denied by the plugin hook, and the `lp-copy-bar` button appears only for Write calls); copy only if `howToTest.clipboard` is `true`. Say in one line where to copy it with formatting for a Jira comment or the work chat (the button above the prompt from the `lp-copy-bar` mod, or that it is already in the clipboard), and that you will apply changes on request. If the user asks for changes, apply them, then print and save again the same way.
+Do not ask whether to copy (the `lp-copy-bar` mod shows a copy button for the saved message). Print the plain text once in a code block, then save by `${CLAUDE_PLUGIN_ROOT}/references/clipboard.md` with `kind` = `how-to-test` (both files with the Write tool: a shell write is denied by the plugin hook, and the `lp-copy-bar` button appears only for Write calls); copy only if `howToTest.clipboard` is `true`. Say in one line where to copy it with formatting for a Jira comment or the work chat (the button above the prompt from the `lp-copy-bar` mod, or that it is already in the clipboard), and that you will apply changes on request. If the user asks for changes, apply them, then print and save again the same way.

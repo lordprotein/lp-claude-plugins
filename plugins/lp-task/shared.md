@@ -26,9 +26,9 @@ Take all templates, paths and the project list only from the merged config.
 - `mrMessage.header` — the value of `{header}` in the team MR message (e.g. a team mention).
 - `mrMessage.lines[]` — template of the team MR message, one element per line (see `references/mr-message.md`).
 - `mrMessage.link` — template of one MR link line in `{links}`.
-- `mrMessage.clipboard` — copy the MR message to the clipboard after `push` (default `false`: it is only saved, the `lp-copy-bar` mod copies it).
+- `mrMessage.clipboard` — copy the MR message to the clipboard after `push` or `mr-message` (default `false`: it is only saved, the `lp-copy-bar` mod copies it).
 - `howToTest.header` — first line of the tester message before the title (e.g. a mention of the testers); empty by default.
-- `howToTest.maxCases` — at most this many test cases in the tester message (default 6; the cases still to check are never cut).
+- `howToTest.maxCases` — at most this many test cases in the tester message (default 6; 🔴 and 🟡 cases are never cut).
 - `howToTest.environment` — the «Стенд» line of the tester message (e.g. where the build is available); empty — no line.
 - `howToTest.clipboard` — copy the tester message to the clipboard right away (default `false`: it is only saved, the `lp-copy-bar` mod copies it).
 - `stateDir` — where the task state is stored: `<stateDir>/<key>.json`.
@@ -44,7 +44,7 @@ Take all templates, paths and the project list only from the merged config.
   - `autoDetectOnly: true` — the project is not offered in the project selection; it is included automatically only if the research/plan showed that changes are needed there (typically a shared library);
   - `notes[]` — project-specific rules: when the project is involved and how to work with it.
 - `planNotes[]` — extra rules for the planning step (`do`, step 6).
-- `pushNotes[]` — extra rules for `push` and the MR message: how to split the task projects into MR groups (one message per group) and when a group may be pushed (e.g. a shared library first, the projects that use it only after its new version is published and set in them). See `skills/push/SKILL.md` «MR groups».
+- `pushNotes[]` — extra rules for `push` and the MR message: how to split the task projects into MR groups (one message per group) and when a group may be pushed (e.g. a shared library first, the projects that use it only after its new version is published and set in them). See `skills/push/SKILL.md` «MR groups» and `skills/mr-message/SKILL.md` «MR groups».
 - `browserTest.forbiddenActions[]` — actions never performed in the browser check.
 - `browserTest.mobileViewport` — `WIDTHxHEIGHT` for `mobile` projects.
 
@@ -107,16 +107,31 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
   ],
   "criteria": [
     { "criterion": "with item.status = CLOSED the cart shows «Недоступно»", "result": "pass" }
-  ]
+  ],
+  "impact": {
+    "web": {
+      "head": "<sha>",
+      "areas": [{ "severity": 3, "area": "Корзина", "block": "блок «Итого»", "page": "/cart", "change": "пересчёт суммы" }],
+      "risks": [],
+      "api": [],
+      "states": [],
+      "conditions": [],
+      "tests": { "added": 0, "updated": 0, "removed": 0 }
+    }
+  }
 }
 ```
 
 `mrGroup` is the id of the MR group the project belongs to when `pushNotes` split the MRs (null otherwise); `push` writes it.
 
-A project that joins the task after the plan (e.g. a follow-up request moves shared code into an `autoDetectOnly` library) is added to `projects` right away, before its first commit: `id`, the worktree `path`, `base`, `commit: null`, `pushed: false`, `mr: null`. `commit`, `push`, the MR groups and `how-to-test` see only the projects listed here.
+A project that joins the task after the plan (e.g. a follow-up request moves shared code into an `autoDetectOnly` library) is added to `projects` right away, before its first commit: `id`, the worktree `path`, `base`, `commit: null`, `pushed: false`, `mr: null`. `commit`, `push`, `mr-message`, the MR groups and `how-to-test` see only the projects listed here.
 
 `plan` is the path of the plan file approved in `do` step 6 (null until then); the session context hook prints it after a compaction.
 
 `checks` is the last «Проверка» run of `test-browser` (rows of the checklist with `result` `pass` / `fail` / `unchecked`; a re-run after a fix updates its rows). `mock` is `null` for a real check, otherwise `{ "what": "the request or data that was substituted, in a few words", "why": "why the real one could not be used, in a few words" }`. `criteria` are the acceptance criteria of the last `lp-task-loop` run, written by `do`. Both are read by `how-to-test`.
+
+`fixCommits` are the shas of follow-up fix commits (`commit` writes them); `how-to-test` reads them for «Доработки».
+
+`impact` is the cached impact map per project, valid while `head` equals the project's HEAD and the working copy is clean (`references/impact.md` «Cache»); written and read by `test-browser` and `how-to-test`.
 
 `reproduction` is written by `test-browser` in the «Обнаружение» mode (`reproduced`: `yes` / `no` / `unknown`) and read by `do` (plan, `Evidence:` for `lp-task-loop`) and by `test-browser` in the «Проверка» mode (the first checklist row).

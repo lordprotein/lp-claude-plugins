@@ -1,6 +1,6 @@
 # MR message
 
-Used by `/lp-task:push`. Config keys: `mrMessage.*` in `shared.md`.
+How to build the text and the HTML of the team MR message. Used by `/lp-task:mr-message` (which `/lp-task:push` calls); the HTML rules are also used by `how-to-test`. Config keys: `mrMessage.*` in `shared.md`.
 
 A ready-made message for the team with the MR links, built from `mrMessage.lines` and `mrMessage.link`. Defaults:
 
@@ -33,11 +33,3 @@ Work chat apps usually turn `* ` / `- ` into a list only while typing, pasted pl
 - escape `&`, `<`, `>` in the text, then wrap every `http(s)://…` URL in `<a href="<url>"><url></a>`.
 
 Example of the default HTML: `<meta charset="utf-8"><div>@team</div><div>ACME-1: Title</div><div><br></div><ul><li>Web: <a href="https://…">https://…</a></li></ul>`.
-
-## MR groups
-
-When `push` split the task into MR groups (`skills/push/SKILL.md` «MR groups»), build one message per group from the same template: `{links}` holds only the projects of that group. Save it with `kind` = `mr-<group>` (the group id: latin letters, digits and `-`, e.g. `mr-kit`); the `lp-copy-bar` button reads «MR <group>». Build and save the message of every group that got a new MR in this run or has no saved `mr-<group>` message yet; a `mr-<group>` message saved by an earlier run stays as it is. The second case covers a task that was split into groups after some of its MRs already existed (e.g. a shared library joined the task later): those MRs got the single `mr` message then, and their group still needs its own `mr-<group>`. Without groups the `kind` is `mr`.
-
-## Save
-
-Save and copy the same way for every copyable message (`${CLAUDE_PLUGIN_ROOT}/references/clipboard.md`) with `kind` = `mr` (or `mr-<group>`): the files `<stateDir>/<key>/messages/<kind>.html` and `<kind>.txt`, both written with the Write tool (a shell write is denied by the plugin hook, and the `lp-copy-bar` button appears only for Write calls). Copy only if `mrMessage.clipboard` is `true`; then say in one line that the message is in the clipboard and will paste into the work chat with formatting. Otherwise only print and save it and say in one line that it is copied by the button above the prompt (`lp-copy-bar` mod).

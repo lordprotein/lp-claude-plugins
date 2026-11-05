@@ -41,7 +41,7 @@ Follow `${CLAUDE_PLUGIN_ROOT}/references/reproduce.md` «Scenario», then contin
 If `<stateDir>/<key>.json` has `reproduction` — its scenario is the first row (`positive`, `P1`): the same steps, with the expected result now required, and the `observedData` given to the agent as the input to look for (the fix must handle exactly these values).
 
 
-For every project collect the changes and find what they reach by `${CLAUDE_PLUGIN_ROOT}/references/impact.md`. Changes made in this session that are already in the context need not be read again. Build a checklist:
+For every project collect the changes and find what they reach by `${CLAUDE_PLUGIN_ROOT}/references/impact.md` (cached map first, a new map is written back to the state). Changes made in this session that are already in the context need not be read again. Build a checklist:
 
 - **Acceptance** — every scenario the task requires (what must appear / disappear / behave differently), including the states mentioned in the task.
 - **Regression** — the places and states from the impact map: pages and widgets that use the changed code, neighbouring states, places of removed entities, and no new console errors or 4xx/5xx caused by the changes.

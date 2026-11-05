@@ -14,7 +14,7 @@ These plugins are used across unrelated projects, and none of them may know anyt
 
 - `.claude-plugin/marketplace.json` — marketplace manifest, lists every plugin in `plugins/`
 - `plugins/<plugin>/skills/<name>/` — skills, invoked as `/<plugin>:<name>`
-- `plugins/lp-task/` — task flow, invoked as `/lp-task:<name>`: `skills/` (do, commit, push, sync-base, test-browser, how-to-test, init), `shared.md` (config, hard rules, state, «Which task»), `references/`, `agents/` (`browser-tester`), `hooks/` (git guards, context after compaction), `bin/lp-stop-port`
+- `plugins/lp-task/` — task flow, invoked as `/lp-task:<name>`: `skills/` (do, commit, push, mr-message, sync-base, test-browser, how-to-test, init), `shared.md` (config, hard rules, state, «Which task»), `references/`, `agents/` (`browser-tester`), `hooks/` (git guards, context after compaction), `bin/lp-stop-port`
 - `plugins/lp-task-loop/` — skill `run` (setup, then the workflow `skills/run/loop.js`: implement/verify/skeptic/review loop), `agents/` (`implementer`, `verifier`, `skeptic`, `reviewer`), `hooks/` (no git writes during the loop)
 - `plugins/lp-code-review/` — skill `review`
 - `plugins/lp-code-test/` — skills `unit`, `e2e`
