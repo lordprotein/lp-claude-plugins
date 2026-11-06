@@ -128,7 +128,7 @@ A project that joins the task after the plan (e.g. a follow-up request moves sha
 
 `plan` is the path of the plan file approved in `do` step 6 (null until then); the session context hook prints it after a compaction.
 
-`checks` is the last «Проверка» run of `test-browser` (rows of the checklist with `result` `pass` / `fail` / `unchecked`; a re-run after a fix updates its rows). `mock` is `null` for a real check, otherwise `{ "what": "the request or data that was substituted, in a few words", "why": "why the real one could not be used, in a few words" }`. `criteria` are the acceptance criteria of the last `lp-task-loop` run, written by `do`. Both are read by `how-to-test`.
+`checks` is the last «Проверка» run of `test-browser` (rows of the checklist with `result` `pass` / `fail` / `unchecked`; a re-run after a fix updates its rows). `mock` is `null` for a real check, otherwise `{ "what": "the request or data that was substituted, in a few words", "why": "why the real one could not be used, in a few words" }`. `criteria` are the acceptance criteria of the last `lp-task-loop` run, written by `do`. Both are read by `how-to-test` (`checks` also for its block «Проверил разработчик», shown only when `checks` exist).
 
 `fixCommits` are the shas of follow-up fix commits (`commit` writes them); `how-to-test` reads them for «Доработки».
 
