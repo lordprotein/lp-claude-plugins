@@ -20,7 +20,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, 
 ## Step 1. Task
 
 1. If there is no link or key in the arguments — ask the user to send a task link (as a regular message, not AskUserQuestion) and wait for the answer.
-2. Extract `{key}` and `{num}` using `tracker.keyRegex`. If that fails — ask for the key again. If only a key was given, the task URL is `tracker.issueUrl` with `{key}` substituted.
+2. Extract `{key}` and `{num}` using `tracker.keyRegex`. If that fails — ask for the key again. If only a key was given, the task URL is `tracker.issueUrl` with `{key}` substituted. Keep the task URL (null if there is none) and write it to the state as `url` with the first state write; `mr-message` links the key to it.
 3. Read the task by `${CLAUDE_PLUGIN_ROOT}/references/read-task.md`. You need summary, description, labels (images from the description are not visible, keep that in mind).
 4. If the description refers to other tasks — read them the same way: they hint at where the code lives.
 5. Briefly retell the task (1–3 lines) and compute the branch name from `git.branch`.

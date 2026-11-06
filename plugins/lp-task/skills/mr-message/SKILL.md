@@ -13,7 +13,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, 
 Nothing is pushed, committed or changed in the repositories: the skill only reads them, the state and the MRs, and writes the state and the message files.
 
 Arguments, in any order:
-- a task key (by `tracker.keyRegex`);
+- a task key (by `tracker.keyRegex`) or a task link (a URL that matches `tracker.keyRegex` and is not an MR/PR link): the key is taken from it;
 - an MR group id (one of the groups of the task, see «MR groups»): build only its message;
 - MR/PR links (`…/-/merge_requests/<id>`, `…/pull/<id>`): they take priority over the state;
 - `--after-push`: set by `/lp-task:push`, see «MR groups».
@@ -36,9 +36,13 @@ For every project take the MR link from the first source that has it:
 
 Never substitute a link to a filtered MR list for an MR link.
 
+## Task link
+
+The key in the message becomes a link to the task when there is one. Take the first that exists: the task link from the arguments; `url` from the state; a task link (with this key) the user gave earlier in this session; `tracker.issueUrl` with `{key}` substituted. None — the key stays as text.
+
 ## State
 
-Write the found links to `mr` and set `pushed: true` for those projects. Without a state file create a minimal one by `shared.md` «State»: `key`, `title`, `branch`, `plan: null`, `projects` (`id`, `path`, `base` = the target branch of the MR or the default branch, `commit: null`, `fixCommits: []`, `pushed`, `mr`, `mrGroup: null`). `{title}`: from the state, otherwise by `${CLAUDE_PLUGIN_ROOT}/references/read-task.md`. `how-to-test`, `lp-code-review` and the next runs read this state.
+Write the found links to `mr` and set `pushed: true` for those projects; write the task link to `url` if it is not there yet. Without a state file create a minimal one by `shared.md` «State»: `key`, `title`, `url`, `branch`, `plan: null`, `projects` (`id`, `path`, `base` = the target branch of the MR or the default branch, `commit: null`, `fixCommits: []`, `pushed`, `mr`, `mrGroup: null`). `{title}`: from the state, otherwise by `${CLAUDE_PLUGIN_ROOT}/references/read-task.md`. `how-to-test`, `lp-code-review` and the next runs read this state.
 
 ## MR groups
 

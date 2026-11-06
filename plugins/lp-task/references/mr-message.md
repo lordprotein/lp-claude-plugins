@@ -21,8 +21,9 @@ Placeholders in `link`: `{label}` (project `label`), `{id}` (project `id`), `{ur
 Building the plain text:
 1. Substitute the placeholders in every line; an unknown placeholder stays as is.
 2. Drop a line that has placeholders and all of them are empty (an empty `header` or `issueUrl` leaves no empty line). A literally empty line `""` stays — it is a separator.
-3. Collapse several empty lines in a row into one, drop empty lines at the start and the end.
-4. If the template has no `{links}` — the links are not printed (the project chose so).
+3. Task link: if the task has a link (see `/lp-task:mr-message` «Task link»), replace the first occurrence of `{key}` in the lines outside the `{links}` block (usually inside `{mrTitle}`) with the markdown link `[<key>](<task url>)`. Skip an occurrence inside a URL; if the message already shows that task URL (e.g. through `{issueUrl}`), leave the key as text. No task link — the key stays as text.
+4. Collapse several empty lines in a row into one, drop empty lines at the start and the end.
+5. If the template has no `{links}` — the links are not printed (the project chose so).
 
 Print the plain text in a code block.
 
@@ -30,6 +31,6 @@ Work chat apps usually turn `* ` / `- ` into a list only while typing, pasted pl
 - start with `<meta charset="utf-8">`;
 - every line → `<div>…</div>`, an empty line → `<div><br></div>`;
 - the `{links}` block: if `link` starts with `* ` or `- ` — one `<ul>` with a `<li>` per link, without that marker; otherwise every link line is a separate `<div>`;
-- escape `&`, `<`, `>` in the text, then wrap every `http(s)://…` URL in `<a href="<url>"><url></a>`.
+- escape `&`, `<`, `>` in the text, then turn the task link `[<key>](<task url>)` into `<a href="<task url>"><key></a>`, then wrap every other `http(s)://…` URL in `<a href="<url>"><url></a>` (never wrap a URL that is already inside an `<a>`).
 
-Example of the default HTML: `<meta charset="utf-8"><div>@team</div><div>ACME-1: Title</div><div><br></div><ul><li>Web: <a href="https://…">https://…</a></li></ul>`.
+Example of the default HTML with a task link: `<meta charset="utf-8"><div>@team</div><div><a href="https://acme.example.com/browse/ACME-1">ACME-1</a>: Title</div><div><br></div><ul><li>Web: <a href="https://…">https://…</a></li></ul>`.

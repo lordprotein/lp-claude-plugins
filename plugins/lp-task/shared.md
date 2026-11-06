@@ -86,6 +86,7 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
 {
   "key": "ACME-1296",
   "title": "...",
+  "url": "https://acme.example.com/browse/ACME-1296",
   "branch": "ACME-1296",
   "plan": "/abs/path/to/the/approved/plan.md",
   "projects": [
@@ -122,6 +123,8 @@ The file `<stateDir>/<key>.json` (create the directory if needed), update it aft
   }
 }
 ```
+
+`url` is the task link: the one the user gave, otherwise `tracker.issueUrl` with `{key}` substituted, otherwise `null`. `do` writes it, `mr-message` fills it if missing and makes the task key in the MR message a link to it.
 
 `mrGroup` is the id of the MR group the project belongs to when `pushNotes` split the MRs (null otherwise); `push` writes it.
 
