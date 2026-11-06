@@ -1,13 +1,14 @@
 ---
 name: commit
-disable-model-invocation: true
-description: Commit the task changes in all of its projects (first commit "{key}: {title}" or a fix "{key}: fix (...)"), then offer to push
+description: Commit the task changes in all of its projects (first commit "{key}: {title}" or a fix "{key}: fix (...)"), then offer to push. Use only when the user explicitly asks to commit («закоммить», «коммит», «commit»), never on your own initiative
 argument-hint: "[short fix description]"
 ---
 
 # /lp-task:commit
 
 Arguments: `$ARGUMENTS`
+
+Run only on an explicit user request to commit (the command or words like «закоммить»); never start it on your own.
 
 First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
 
@@ -59,6 +60,6 @@ Print a table «project → branch → sha → message».
 
 If no commit was made in any project — skip this section.
 
-Ask AskUserQuestion, header «Push»: «Запушить изменения?» — exactly 2 options: «Да» / «Нет».
-- «Да» — this is an explicit permission to push: read `${CLAUDE_PLUGIN_ROOT}/skills/push/SKILL.md` and follow it for this same task (`/lp-task:push`).
+If the user already asked to push in the same request («закоммить и запушь») — do not ask, act as on «Да». Otherwise ask AskUserQuestion, header «Push»: «Запушить изменения?» — exactly 2 options: «Да» / «Нет».
+- «Да» — this is an explicit permission to push: call the skill `lp-task:push` via the Skill tool with the task key and follow it.
 - «Нет» — push nothing, print the hint «Для push — `/lp-task:push`» and stop.

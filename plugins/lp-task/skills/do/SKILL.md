@@ -103,8 +103,8 @@ Do not commit. Show `git diff --stat` for every project, then ask (AskUserQuesti
 
 Final message: «Изменения готовы. Для коммита — `/lp-task:commit` (или напишите „закоммить“). Проверка в браузере — `/lp-task:test-browser`» — and stop.
 
-If the user asks «закоммить» in this session — follow the instructions from `${CLAUDE_PLUGIN_ROOT}/skills/commit/SKILL.md`. Follow-up fixes (before or after push) are committed the same way: always a new `git.fixCommit` commit, no amend and no force push.
+If the user asks «закоммить» in this session — call the skill `lp-task:commit` via the Skill tool. Follow-up fixes (before or after push) are committed the same way: always a new `git.fixCommit` commit, no amend and no force push.
 
-If the user writes «запушь» in this session — follow the instructions from `${CLAUDE_PLUGIN_ROOT}/skills/push/SKILL.md`.
+If the user writes «запушь» in this session — call the skill `lp-task:push` via the Skill tool (after `lp-task:commit` when both are asked).
 
 If the user asks to check in the browser in this session — follow the instructions from `${CLAUDE_PLUGIN_ROOT}/skills/test-browser/SKILL.md`.

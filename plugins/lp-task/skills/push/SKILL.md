@@ -1,13 +1,14 @@
 ---
 name: push
-disable-model-invocation: true
-description: Push the task branches and create MRs/PRs in all of its projects, print the links
+description: Push the task branches and create MRs/PRs in all of its projects, print the links. Use only when the user explicitly asks to push («запушь», «пуш», «push») or answered «Да» to «Запушить изменения?», never on your own initiative
 argument-hint: "[task key]"
 ---
 
 # /lp-task:push
 
 Arguments: `$ARGUMENTS`
+
+Run only on an explicit user request to push (the command, words like «запушь», or «Да» to «Запушить изменения?»); never start it on your own.
 
 First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
 

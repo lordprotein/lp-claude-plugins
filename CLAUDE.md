@@ -29,7 +29,7 @@ These plugins are used across unrelated projects, and none of them may know anyt
 - A plugin cannot read files of another plugin (`${CLAUDE_PLUGIN_ROOT}` is its own folder): call the other plugin's skill via the Skill tool and inline the config defaults it needs
 - Every commit that changes a plugin bumps `version` in its `plugin.json` (semver: patch for fixes and wording, minor for new commands, skills or behavior, major for renames and removals). Without a bump installed copies do not update
 - Skill-specific rules live in the skill's own `CLAUDE.md`
-- Commands are skills (`skills/<name>/SKILL.md`); skills with side effects that only the user starts get `disable-model-invocation: true`. Such a skill cannot be called through the Skill tool: another skill reaches it by reading its `SKILL.md`
+- Commands are skills (`skills/<name>/SKILL.md`); skills with side effects get `disable-model-invocation: true` only when the user never asks for them in words: such a skill cannot be called through the Skill tool at all (the harness also forbids following it by other means). A skill the user asks for in words («закоммить») stays model-invocable and is limited by its description («only when the user explicitly asks») and by hooks
 - `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}` and `${CLAUDE_SKILL_DIR}` are substituted only in a skill or agent body loaded by Claude Code, not in files read with Read (`shared.md`, references)
 - Hooks are bash + jq (node may come from nvm and be missing in the hook environment); test them by piping a JSON input into the script
 - Run `claude plugin validate .` before pushing; `.githooks/pre-push` runs `--strict` for the marketplace and every plugin (enable once: `git config core.hooksPath .githooks`)
