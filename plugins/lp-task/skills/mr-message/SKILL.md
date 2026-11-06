@@ -1,6 +1,6 @@
 ---
 name: mr-message
-description: Build the team message with the MR/PR links of a task and save it for copying (button of the lp-copy-bar mod), also for branches pushed by hand. Use when the user asks for the MR message or the MR links for the team («сообщение для MR», «собери ссылки на MR», «я запушил руками, сделай сообщение», «пересобери сообщение MR»)
+description: Build the team message with the MR/PR links of a task and save it for copying, also for branches pushed by hand. Use when the user asks for the MR message or links («сообщение для MR», «собери ссылки на MR», «пересобери сообщение MR»)
 argument-hint: "[task key] [MR group] [MR links...]"
 ---
 

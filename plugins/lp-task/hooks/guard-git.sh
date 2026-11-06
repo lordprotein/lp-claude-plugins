@@ -6,6 +6,7 @@
 source "${CLAUDE_PLUGIN_ROOT}/hooks/lib.sh"
 
 input=$(cat)
+[[ "$input" == *git* ]] || exit 0   # cheap exit before the first jq
 cmd=$(jq -r '.tool_input.command // empty' <<<"$input")
 cwd=$(jq -r '.cwd // empty' <<<"$input")
 [[ "$cmd" == *git* ]] || exit 0

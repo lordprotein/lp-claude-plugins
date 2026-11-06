@@ -1,0 +1,12 @@
+{
+  "name": "lp-explain-code",
+  "version": "1.0.1",
+  "description": "Skill: /lp-explain-code:explain (explains changes, files, functions or how a flow works, --html publishes a page)",
+  "author": {
+    "name": "lordprotein"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "lp-explain-code"
+  }
+}

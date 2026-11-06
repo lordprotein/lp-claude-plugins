@@ -1,6 +1,6 @@
 {
   "name": "lp-task",
-  "version": "4.9.0",
+  "version": "4.9.1",
   "description": "Skills /lp-task:do (tracker task → project selection → plan → branches → implementation, in the autonomous lp-task-loop by default, --without-loop to implement directly), /lp-task:test-browser (browser run via Chrome MCP or Playwright: reproduce the bug before the fix or check the changes), /lp-task:commit (commit the task changes in all of its projects with the template message, no confirmation, then offer to push), /lp-task:push (push + MR/PR, optionally in MR groups with their own messages from pushNotes, then the MR message and, with isAllowHowToTestAfterPush, the testers message built in parallel), /lp-task:mr-message (team message with the MR links, the task key linked to the task, also for branches pushed by hand, saved for copying), /lp-task:sync-base (rebase the task branches onto the updated base), /lp-task:how-to-test (message for testers: affected areas with severity, before / after, extra changes, cases to check, what the developer checked in the browser if test-browser ran, saved for copying; the impact map is cached in the state) and /lp-task:init (create a project config); hooks that enforce the push, attribution, stash and message-file (Write only) rules and restore the task context after compaction; bin/lp-stop-port",
   "author": {
     "name": "lordprotein"

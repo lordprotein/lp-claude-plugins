@@ -7,6 +7,7 @@
 # work dir (only a <TMPDIR or /tmp>/lp-task-loop.XXXXXX directory). The hook does it because Claude Code
 # permissions deny the model an `rm` outside the project (plugin data, system temp). The echo itself runs.
 input=$(cat)
+[[ "$input" == *git* || "$input" == *lp-task-loop:end* ]] || exit 0   # cheap exit before the first jq
 cmd=$(jq -r '.tool_input.command // empty' <<<"$input")
 
 q='("[^"]*"|'\''[^'\'']*'\''|[^[:space:]]+)'

@@ -1,0 +1,68 @@
+{
+  "name": "lp-tools",
+  "interface": {
+    "displayName": "lp-tools"
+  },
+  "plugins": [
+    {
+      "name": "lp-code-review",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lp-code-review"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "lp-code-test",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lp-code-test"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "lp-explain-code",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lp-explain-code"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "lp-task-loop",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lp-task-loop"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    },
+    {
+      "name": "lp-task",
+      "source": {
+        "source": "local",
+        "path": "./plugins/lp-task"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}

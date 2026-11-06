@@ -1,0 +1,143 @@
+#!/bin/bash
+# Generate the Codex files from the Claude Code sources (the Claude format is the source of truth).
+#   scripts/sync-codex          write the files
+#   scripts/sync-codex --check  write nothing, fail if a generated file is out of date
+# Generated: plugins/<p>/.codex-plugin/plugin.json, .agents/plugins/marketplace.json,
+#            plugins/<p>/codex-agents/<name>.toml (from plugins/<p>/agents/<name>.md)
+# Plugins without skills/ (mods such as lp-copy-bar) are Claude-only and are skipped.
+# A plugin with codex-skills/ points its Codex manifest there instead of skills/.
+# Blocks marked <!-- sync:ID --> are copied from skills/<n>/SKILL.md into codex-skills/<n>/SKILL.md and checked.
+set -euo pipefail
+command -v jq >/dev/null || { echo "sync-codex: jq is required" >&2; exit 2; }
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+check=0
+[ "${1:-}" = "--check" ] && check=1
+status=0
+
+# emit <path> <content>: write the file or, in check mode, compare it
+emit() {
+  local path=$1 content=$2
+  if [ $check -eq 1 ]; then
+    if [ ! -f "$path" ] || [ "$(cat "$path")" != "$content" ]; then
+      echo "sync-codex: out of date: ${path#"$root"/}" >&2
+      status=1
+    fi
+  else
+    mkdir -p "$(dirname "$path")"
+    printf '%s\n' "$content" > "$path"
+  fi
+}
+
+# Shared blocks of a skill that exists in two versions (skills/<n>/SKILL.md for Claude, codex-skills/<n>/SKILL.md
+# for Codex) are marked in both files with <!-- sync:ID --> ... <!-- /sync:ID -->. The Claude block is the source:
+# the script copies it into the Codex file, --check fails when the two differ or a marker is missing.
+block() { awk -v id="$2" '$0=="<!-- sync:" id " -->" {f=1; next} $0=="<!-- /sync:" id " -->" {f=0} f' "$1"; }
+block_ids() { grep -o '<!-- sync:[a-z0-9-]* -->' "$1" | sed 's/<!-- sync:\(.*\) -->/\1/'; }
+
+sync_blocks() {
+  local claude=$1 codex=$2 id tmp
+  for id in $(block_ids "$claude"); do
+    if ! grep -qxF "<!-- sync:$id -->" "$codex" || ! grep -qxF "<!-- /sync:$id -->" "$codex"; then
+      echo "sync-codex: block '$id' of ${claude#"$root"/} has no markers in ${codex#"$root"/}" >&2
+      status=1; continue
+    fi
+    if [ "$(block "$claude" "$id")" != "$(block "$codex" "$id")" ]; then
+      if [ $check -eq 1 ]; then
+        echo "sync-codex: block '$id' differs: ${claude#"$root"/} vs ${codex#"$root"/}" >&2
+        status=1
+      else
+        tmp=$(mktemp)
+        block "$claude" "$id" > "$tmp"
+        awk -v id="$id" -v rf="$tmp" '
+          $0=="<!-- sync:" id " -->" { print; while ((getline l < rf) > 0) print l; skip=1; next }
+          $0=="<!-- /sync:" id " -->" { skip=0 }
+          !skip' "$codex" > "$codex.new" && mv "$codex.new" "$codex"
+        rm -f "$tmp"
+      fi
+    fi
+  done
+  for id in $(block_ids "$codex"); do
+    grep -qxF "<!-- sync:$id -->" "$claude" || { echo "sync-codex: block '$id' of ${codex#"$root"/} is not in ${claude#"$root"/}" >&2; status=1; }
+  done
+}
+
+# frontmatter <file> <key>: value of a single-line key in the YAML frontmatter
+frontmatter() {
+  awk -v k="$2" '
+    NR==1 && $0=="---" { fm=1; next }
+    fm && $0=="---" { exit }
+    fm && index($0, k ":")==1 { sub("^" k ":[ ]*", ""); print; exit }
+  ' "$1"
+}
+
+# body <file>: everything after the frontmatter
+body() {
+  awk 'NR==1 && $0=="---" { fm=1; next } fm && $0=="---" { fm=0; next } !fm' "$1"
+}
+
+market='[]'
+for dir in "$root"/plugins/*/; do
+  name=$(basename "$dir")
+  src="$dir.claude-plugin/plugin.json"
+  [ -f "$src" ] || continue
+  if [ ! -d "$dir/skills" ]; then
+    echo "sync-codex: skip $name (no skills/, Claude-only)" >&2
+    continue
+  fi
+
+  # codex-skills/ (hand-written Codex versions of skills that differ too much from the Claude ones) replaces skills/ for Codex
+  skills="./skills/"
+  if [ -d "$dir/codex-skills" ]; then
+    skills="./codex-skills/"
+    for cs in "$dir"/codex-skills/*/SKILL.md; do
+      [ -f "$cs" ] || continue
+      cl="$dir/skills/$(basename "$(dirname "$cs")")/SKILL.md"
+      [ -f "$cl" ] && sync_blocks "$cl" "$cs"
+    done
+  fi
+
+  manifest=$(jq --arg skills "$skills" --arg hooks "./hooks/hooks.json" --argjson hasHooks "$([ -f "$dir/hooks/hooks.json" ] && echo true || echo false)" '
+    {name, version, description, author, skills: $skills}
+    + (if $hasHooks then {hooks: $hooks} else {} end)
+    + {interface: {displayName: .name}}
+  ' "$src")
+  emit "$dir.codex-plugin/plugin.json" "$manifest"
+
+  if [ -d "$dir/agents" ]; then
+    for agent in "$dir"/agents/*.md; do
+      [ -f "$agent" ] || continue
+      aname=$(frontmatter "$agent" name)
+      adesc=$(frontmatter "$agent" description)
+      # Codex keeps the model of the parent (model names differ per client); only the reasoning effort is mapped:
+      # `effort:` (xhigh -> high), else a cheap Claude model (haiku) -> low.
+      aeffort=$(frontmatter "$agent" effort); amodel=$(frontmatter "$agent" model)
+      case "$aeffort" in xhigh|max) aeffort=high;; esac
+      [ -z "$aeffort" ] && [ "$amodel" = "haiku" ] && aeffort=low
+      effline=""; [ -n "$aeffort" ] && effline="model_reasoning_effort = \"$aeffort\""$'\n'
+      # Codex cannot restrict tools or the sandbox per agent, so a role without Edit/Write is read-only by its text.
+      ro=""
+      case ",$(frontmatter "$agent" tools)," in *Edit*|*Write*) ;; *) ro="Read-only role: never edit, create or delete files in the repository, never change git state."$'\n\n';; esac
+      toml=$(printf 'name = %s\ndescription = %s\n%sdeveloper_instructions = """\n%s%s\n"""' \
+        "$(jq -Rn --arg v "$aname" '$v')" "$(jq -Rn --arg v "$adesc" '$v')" "$effline" "$ro" \
+        "$(body "$agent" | sed 's/\\/\\\\/g; s/"""/\\"\\"\\"/g')")
+      emit "$dir/codex-agents/$aname.toml" "$toml"
+    done
+  fi
+
+  market=$(jq --arg n "$name" --argjson m "$manifest" '. + [{
+    name: $n,
+    source: {source: "local", path: ("./plugins/" + $n)},
+    policy: {installation: "AVAILABLE", authentication: "ON_INSTALL"},
+    category: "Developer Tools"
+  }]' <<<"$market")
+done
+
+mname=$(jq -r .name "$root/.claude-plugin/marketplace.json")
+emit "$root/.agents/plugins/marketplace.json" "$(jq -n --arg n "$mname" --argjson p "$market" \
+  '{name: $n, interface: {displayName: $n}, plugins: $p}')"
+
+if [ $check -eq 1 ]; then
+  [ $status -eq 0 ] && echo "sync-codex: up to date"
+fi
+exit $status

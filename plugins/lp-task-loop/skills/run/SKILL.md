@@ -17,13 +17,16 @@ Run autonomously: do not ask the user anything after step 0 unless an agent repo
 1. Parse `--max N` (integer ≥ 1, default 3), `--budget N` (output tokens of the whole loop, `150000` or `150k`, default 150000) and `--repo <path>` (default: the current directory) and remove them from the arguments; the rest is the task. If the task is empty, ask for it as a regular message and wait.
 2. The repo root `R` = `git -C <repo> rev-parse --show-toplevel`. If it is not a git repository, say that the loop needs git to track changes and stop. Run every git command of the loop as `git -C "$R" ...` and pass `R` to every agent as the repo root.
 3. Find the project commands, cheaply: `package.json` scripts (lint, typecheck/tsc, test, build), `Makefile` targets, the repo `CLAUDE.md`, and `lint` of the matching project in `.claude/lp-task.json` (searched upward from `R`) if it exists. Do not run them here.
+<!-- sync:criteria -->
 4. Write 3 to 8 acceptance criteria: concrete and checkable (behaviour, edge cases the task implies, commands that must pass). No criteria that nobody can verify.
    - If the task has an `Evidence:` block (real data observed when the bug was reproduced), at least one criterion is stated on exactly that data: «with <observed data> the code gives <expected result>». Criteria describe the observed input, not the input the plan assumes: the plan may be built on a wrong guess, and the loop must not confirm it.
    - If the task is a bug fix without `Evidence:` (or it says the root cause is a hypothesis), remember it for the final report.
+<!-- /sync:criteria -->
 5. Create a work dir: `W=$(mktemp -d "${TMPDIR:-/tmp}/lp-task-loop.XXXXXX")`. Take the baseline snapshot (see «Snapshots») as `base`.
 6. Create the loop marker: `mkdir -p "${CLAUDE_PLUGIN_DATA}/loop-active" && echo "$R" > "${CLAUDE_PLUGIN_DATA}/loop-active/$(printf '%s' "$R" | tr '/' '_')"`. While it exists (at most 3 hours), the plugin hook denies `git commit`, `push`, `checkout`, `switch`, `stash`, `reset`, `rebase`, `add` and `restore` in `R` (snapshots with `GIT_INDEX_FILE` are allowed). It is removed at the end, whatever the outcome (see «Cleanup»).
 7. Show the criteria and commands in one short block and continue without waiting.
 
+<!-- sync:snapshots -->
 ## Snapshots
 
 A snapshot is a tree of the working copy that does not touch the real index or the files:
@@ -33,6 +36,7 @@ cp "$(git -C "$R" rev-parse --path-format=absolute --git-path index)" "$W/idx" &
 ```
 
 If the copy fails because the repository has no index yet, skip the `cp`. Remember the printed hash per iteration (`base`, `s1`, `s2`, ...). Always compare two snapshots, never a snapshot with the working copy (that misses new untracked files): `git diff <base> <sN>` is the full change of the loop, `git diff <s(N-1)> <sN>` is the delta of iteration N; `--name-only` / `--stat` give the file lists.
+<!-- /sync:snapshots -->
 
 ## The loop
 

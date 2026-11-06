@@ -1,6 +1,6 @@
 ---
 name: how-to-test
-description: Build a short message for the testers (QA) of a task and save it for copying: the affected areas of the app with a severity mark, before / after, extra changes made during the task, the cases to check with where, steps and expected result. Use when the user asks how to test the changes or what to give the testers («как тестировать», «для тестеров», «что отдать QA», «где проверить эти изменения», «how to test»)
+description: Build a short message for the QA of a task and save it for copying: affected areas with severity, before / after, cases to check. Use when the user asks how to test the changes («как тестировать», «для тестеров», «что отдать QA», «how to test»)
 argument-hint: "[task key]"
 ---
 

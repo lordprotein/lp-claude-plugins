@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Expert code review with a senior engineer lens. Use whenever the user asks for a code review or a check before merge (ревью, проверь код, посмотри изменения, review this): git changes, pasted code, files, folders, features, a GitLab MR or a GitHub PR. Detects SOLID violations, security risks, performance and error-handling problems, and proposes actionable improvements."
+description: "Senior-level code review of git changes, pasted code, files, a GitLab MR or a GitHub PR: SOLID, security, performance, error handling. Use when the user asks for a review or a check before merge (ревью, проверь код, посмотри изменения, review this)"
 ---
 
 # Code Review Expert

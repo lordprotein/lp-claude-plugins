@@ -1,0 +1,53 @@
+#!/bin/bash
+# Output tokens spent by a Codex loop run, read from the Codex session logs (rollout files).
+# Codex has no per-run token counter for a skill, so this sums the growth of `output_tokens`
+# over every rollout whose working directory is the repo (the orchestrator and its subagents).
+#
+#   lp-loop-tokens start <repo> <state-file>   remember the current counters
+#   lp-loop-tokens spent <repo> <state-file>   print the output tokens spent since `start` (a number)
+#
+# `start` also writes <state-file>.marker. Exit 0 and a number on success. Exit 3 and no output when the logs cannot be read
+# (no sessions dir, no jq): the caller then treats the budget as unmeasurable.
+# Needs bash and jq. CODEX_HOME defaults to ~/.codex.
+set -u
+cmd=${1:-}; repo=${2:-}; state=${3:-}
+if [ -z "$cmd" ] || [ -z "$repo" ] || [ -z "$state" ]; then
+  echo "usage: lp-loop-tokens start|spent <repo> <state-file>" >&2; exit 2
+fi
+command -v jq >/dev/null || exit 3
+dir="${CODEX_HOME:-$HOME/.codex}/sessions"
+[ -d "$dir" ] || exit 3
+repo=$(cd "$repo" 2>/dev/null && pwd -P) || exit 3
+
+# out_of <file>: the last output_tokens counter of a rollout (0 when there is none yet)
+out_of() {
+  local out
+  out=$(grep -a '"type":"token_count"' "$1" | tail -n 1 | jq -r '.payload.info.total_token_usage.output_tokens // empty' 2>/dev/null)
+  printf '%s' "${out:-0}"
+}
+in_repo() { [ "$(head -n 1 "$1" | jq -r '.payload.cwd // empty' 2>/dev/null)" = "$repo" ]; }
+
+# start: the rollouts of the repo from the last 2 days (file, counter), plus a marker file.
+# spent: only those files and the rollouts newer than the marker (subagents started later) are read,
+# not every log of the last days.
+case "$cmd" in
+  start)
+    : > "$state.tmp" || exit 3
+    while IFS= read -r f; do
+      in_repo "$f" && printf '%s\t%s\n' "$f" "$(out_of "$f")" >> "$state.tmp"
+    done < <(find "$dir" -name 'rollout-*.jsonl' -type f -mtime -2 2>/dev/null)
+    mv "$state.tmp" "$state" && : > "$state.marker" || exit 3
+    ;;
+  spent)
+    [ -f "$state" ] && [ -f "$state.marker" ] || exit 3
+    {
+      cut -f1 "$state"
+      find "$dir" -name 'rollout-*.jsonl' -type f -newer "$state.marker" 2>/dev/null | while IFS= read -r f; do
+        grep -qxF "$f" <(cut -f1 "$state") || { in_repo "$f" && printf '%s\n' "$f"; }
+      done
+    } | while IFS= read -r f; do
+      [ -f "$f" ] && printf '%s\t%s\n' "$f" "$(out_of "$f")"
+    done | awk -F'\t' 'NR==FNR { base[$1]=$2; next } { d=$2-base[$1]; if (d>0) s+=d } END { print s+0 }' "$state" -
+    ;;
+  *) echo "usage: lp-loop-tokens start|spent <repo> <state-file>" >&2; exit 2 ;;
+esac
