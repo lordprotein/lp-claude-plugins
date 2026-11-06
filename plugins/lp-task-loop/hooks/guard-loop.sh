@@ -3,8 +3,30 @@
 #  - in calls made by lp-task-loop agents (agent_type lp-task-loop:*), anywhere;
 #  - in a repository that has a fresh loop marker (<plugin data>/loop-active/<repo path with / as _>, < 3 h).
 # Snapshots with GIT_INDEX_FILE=... are allowed (they use a temporary index).
+# Cleanup: `echo lp-task-loop:end "<repo root>" ["<work dir>"]` removes the loop marker of that repo and the
+# work dir (only a <TMPDIR or /tmp>/lp-task-loop.XXXXXX directory). The hook does it because Claude Code
+# permissions deny the model an `rm` outside the project (plugin data, system temp). The echo itself runs.
 input=$(cat)
 cmd=$(jq -r '.tool_input.command // empty' <<<"$input")
+
+q='("[^"]*"|'\''[^'\'']*'\''|[^[:space:]]+)'
+if [[ "$cmd" =~ ^[[:space:]]*echo[[:space:]]+lp-task-loop:end[[:space:]]+$q([[:space:]]+$q)?[[:space:]]*$ ]]; then
+  r="${BASH_REMATCH[1]}"; r="${r//\"/}"; r="${r//\'/}"
+  w="${BASH_REMATCH[3]}"; w="${w//\"/}"; w="${w//\'/}"
+  if [ -n "${CLAUDE_PLUGIN_DATA:-}" ] && [ "${r:0:1}" = "/" ]; then
+    m="$CLAUDE_PLUGIN_DATA/loop-active/$(printf '%s' "$r" | tr '/' '_')"
+    [ -f "$m" ] && rm -f "$m"
+  fi
+  if [ -n "$w" ] && [ -d "$w" ] && [[ "$(basename "$w")" =~ ^lp-task-loop\.[A-Za-z0-9]{6}$ ]]; then
+    parent=$(cd "$(dirname "$w")" 2>/dev/null && pwd -P)
+    for t in "${TMPDIR:-/tmp}" /tmp; do
+      tp=$(cd "$t" 2>/dev/null && pwd -P) || continue
+      if [ -n "$parent" ] && [ "$parent" = "$tp" ]; then rm -rf "$parent/$(basename "$w")"; break; fi
+    done
+  fi
+  exit 0
+fi
+
 [[ "$cmd" == *git* ]] || exit 0
 cwd=$(jq -r '.cwd // empty' <<<"$input")
 agent=$(jq -r '.agent_type // empty' <<<"$input")

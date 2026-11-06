@@ -21,7 +21,7 @@ Run autonomously: do not ask the user anything after step 0 unless an agent repo
    - If the task has an `Evidence:` block (real data observed when the bug was reproduced), at least one criterion is stated on exactly that data: «with <observed data> the code gives <expected result>». Criteria describe the observed input, not the input the plan assumes: the plan may be built on a wrong guess, and the loop must not confirm it.
    - If the task is a bug fix without `Evidence:` (or it says the root cause is a hypothesis), remember it for the final report.
 5. Create a work dir: `W=$(mktemp -d "${TMPDIR:-/tmp}/lp-task-loop.XXXXXX")`. Take the baseline snapshot (see «Snapshots») as `base`.
-6. Create the loop marker: `mkdir -p "${CLAUDE_PLUGIN_DATA}/loop-active" && echo "$R" > "${CLAUDE_PLUGIN_DATA}/loop-active/$(printf '%s' "$R" | tr '/' '_')"`. While it exists (at most 3 hours), the plugin hook denies `git commit`, `push`, `checkout`, `switch`, `stash`, `reset`, `rebase`, `add` and `restore` in `R` (snapshots with `GIT_INDEX_FILE` are allowed). Remove it at the end, whatever the outcome.
+6. Create the loop marker: `mkdir -p "${CLAUDE_PLUGIN_DATA}/loop-active" && echo "$R" > "${CLAUDE_PLUGIN_DATA}/loop-active/$(printf '%s' "$R" | tr '/' '_')"`. While it exists (at most 3 hours), the plugin hook denies `git commit`, `push`, `checkout`, `switch`, `stash`, `reset`, `rebase`, `add` and `restore` in `R` (snapshots with `GIT_INDEX_FILE` are allowed). It is removed at the end, whatever the outcome (see «Cleanup»).
 7. Show the criteria and commands in one short block and continue without waiting.
 
 ## Snapshots
@@ -71,4 +71,6 @@ In Russian, short:
 5. `git diff --stat <base> <last snapshot>` (the loop's change, nothing is committed).
 6. Next: commit with `/lp-task:commit` (or manually), browser check with `/lp-task:test-browser`.
 
-Delete `$W` and the loop marker at the end.
+## Cleanup
+
+At the end, whatever the outcome (also after a blocker, an agent error or a stop at the checkpoint), run exactly `echo lp-task-loop:end "<R>" "<W>"` with both paths written out literally (shell variables do not survive between Bash calls). The plugin hook sees this command and removes the loop marker of `R` and the work dir `W`. Never use `rm` for them: Claude Code permissions deny deleting outside the project. Then check `test -e "${CLAUDE_PLUGIN_DATA}/loop-active/<R with / as _>"`; only if the marker is still there, tell the user in one line its path and `! rm -f "<path>"`, because until then `git commit` is denied in `R`. A leftover `W` does not matter, do not mention it.
