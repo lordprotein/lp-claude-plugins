@@ -64,8 +64,8 @@ Update the state (`pushed`, `mr`, `mrGroup`) and print a table (the «Групп
 
 And separately all the links as a list, so they are easy to copy.
 
-Then build, print and save the MR message and the testers message at the same time: in one response call two Skill tools, do not wait for one before the other:
+Then build, print and save the MR message and, only when `isAllowHowToTestAfterPush` is `true` in the merged config, the testers message at the same time: in one response call the Skill tools, do not wait for one before the other:
 - `lp-task:mr-message` with the arguments `<key> --after-push` (one message per MR group that got a new MR or has no saved `mr-<group>` message yet, see «MR groups» there);
-- `lp-task:how-to-test` with the argument `<key>`; skip it when nothing was pushed in this run (every group waits).
+- `lp-task:how-to-test` with the argument `<key>`: only when `isAllowHowToTestAfterPush` is `true` (missing or `false`: do not call it and do not mention it); skip it also when nothing was pushed in this run (every group waits).
 
 Both write the state file: before every write of the state read it again and change only that skill's own fields, so one does not overwrite the other. If a group waits — say in one line what unblocks it and that the next step is a commit with the change (`/lp-task:commit`), then `/lp-task:push` again.

@@ -26,6 +26,7 @@
     "environment": "",
     "clipboard": false
   },
+  "isAllowHowToTestAfterPush": false,
   "stateDir": "~/.claude/lp-task/state",
   "review": {
     "postToMr": "ask",

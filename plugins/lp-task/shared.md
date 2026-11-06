@@ -31,6 +31,7 @@ Take all templates, paths and the project list only from the merged config.
 - `howToTest.maxCases` — at most this many test cases in the tester message (default 6; 🔴 and 🟡 cases are never cut).
 - `howToTest.environment` — the «Стенд» line of the tester message (e.g. where the build is available); empty — no line.
 - `howToTest.clipboard` — copy the tester message to the clipboard right away (default `false`: it is only saved, the `lp-copy-bar` mod copies it).
+- `isAllowHowToTestAfterPush` — after `push` also build the tester message (`how-to-test`); missing or `false` (default): `push` does not build it, call `/lp-task:how-to-test` by hand.
 - `stateDir` — where the task state is stored: `<stateDir>/<key>.json`.
 - `review.postToMr` — `ask` (default): after a review of a GitLab MR offer to publish the findings as MR comments; `never`: do not offer.
 - `review.minSeverity` — lowest severity offered for publishing: `critical`, `high`, `medium` (default) or `low`.
