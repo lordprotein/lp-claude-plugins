@@ -1,7 +1,7 @@
 ---
 name: do
 description: Tracker task → project selection → plan → branches → implementation (commit via /lp-task:commit, push via /lp-task:push, browser check via /lp-task:test-browser)
-argument-hint: "[task link | key | status]"
+argument-hint: "[task link | key | status] [--without-loop]"
 ---
 
 # /lp-task:do
@@ -12,6 +12,7 @@ First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, 
 
 ## Routing by argument
 
+- `--without-loop` (anywhere in the arguments), or the user asks in words in this session to implement without the loop («без loop», «без автономного цикла») → implement «Without the loop» in step 6; remove the flag and route the rest of the arguments as below.
 - `status` → follow `${CLAUDE_PLUGIN_ROOT}/references/do-special-cases.md` «Status». Change nothing.
 - task link or key → start from step 1 using it.
 - empty → start from step 1 and ask for the link.
@@ -84,13 +85,13 @@ Remember the answers and write the state (projects, base, branch).
    - for «Пересоздать» — `checkout -B`, for «Переиспользовать» — `checkout <branch>`; verify `branch --show-current`.
 
    Update the state, including `plan` (the path of the approved plan file).
-4. Ask (AskUserQuestion), header «Реализация»: «Как реализовать план?» — «Обычно» (I implement it here, as below) / «Автономный цикл» (implement → verify → skeptic → review → fix, without questions, via `lp-task-loop`).
+4. Implement. Do not ask how: by default always in the autonomous loop (implement → verify → skeptic → review → fix, without questions, via `lp-task-loop`); «Without the loop» only with `--without-loop` (see «Routing by argument») or when `lp-task-loop:run` is not available.
 
    **One project first.** When the same fix goes to several projects, implement and check the first one (the one the bug reproduced in, if any) before the others: lint, and, if there was a reproduction, the reproduction scenario in the browser (`test-browser` «Проверка» mode with only that row). Only after ✅ move to the other projects and to extracting shared code into a library. On ❌ go back to item 1 with what the check showed.
 
-   On «Автономный цикл» follow `${CLAUDE_PLUGIN_ROOT}/references/do-loop.md`, then go to item 5.
+   By default follow `${CLAUDE_PLUGIN_ROOT}/references/do-loop.md`, then go to item 5.
 
-   On «Обычно» implement the plan yourself. Unit tests (for both modes): do not write new ones and do not put them in the plan, the user runs `/lp-code-test:unit` for that when needed. Existing unit tests that the changes break or make obsolete may be fixed or removed, but only through the `lp-code-test:unit` skill (invoke it via the Skill tool, its "Fix existing tests" path); once you use it, follow it fully to the end, so every unit test change goes through it. If the skill is not available (the `lp-code-test` plugin is not installed), do not touch the tests: list the broken or obsolete ones in the final message and suggest `/plugin install lp-code-test@lp-tools`.
+   «Without the loop»: implement the plan yourself. Unit tests (for both modes): do not write new ones and do not put them in the plan, the user runs `/lp-code-test:unit` for that when needed. Existing unit tests that the changes break or make obsolete may be fixed or removed, but only through the `lp-code-test:unit` skill (invoke it via the Skill tool, its "Fix existing tests" path); once you use it, follow it fully to the end, so every unit test change goes through it. If the skill is not available (the `lp-code-test` plugin is not installed), do not touch the tests: list the broken or obsolete ones in the final message and suggest `/plugin install lp-code-test@lp-tools`.
 5. Check: in every project with a non-empty `lint` run `git -C <path> diff --name-only --diff-filter=d | (cd <path> && xargs <lint>)` (do not pass the file list through a variable — zsh will not split it into arguments). Mark warnings that existed before the changes as pre-existing.
 
 ## Step 7. Waiting

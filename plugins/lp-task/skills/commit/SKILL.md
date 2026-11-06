@@ -37,7 +37,7 @@ The template is chosen per project by its state:
   - `{summary}` — from the argument, if passed;
   - otherwise — phrase it yourself from the diff and the conversation context: in Russian, 3–8 words, starting with a lowercase letter, one common message for all fix projects.
 
-Show a table «project → changed files → message», then ask AskUserQuestion, header «Коммит»: «Закоммитить изменения?» — in the question text list the projects and files and quote the commit message(s); exactly 2 options: «Да» / «Нет». «Да» — commit with these messages; «Нет» — commit nothing, stop and wait for instructions; if the user entered their own text via Other — use it as the message (or as `{summary}` for a fix commit) and commit. Do not commit without the answer «Да» (or custom text).
+Show a table «project → changed files → message» and commit right away with these messages: do not ask whether the message is fine, choose it yourself. A different `{summary}` is passed as the argument.
 
 ## Commit
 
