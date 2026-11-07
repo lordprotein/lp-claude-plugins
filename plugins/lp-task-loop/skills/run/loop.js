@@ -45,6 +45,7 @@ const VER = {
   type: 'object',
   properties: {
     snapshot: { type: 'string', description: 'tree hash printed by the snapshot command' },
+    shortstat: { type: 'string', description: 'output of git diff --shortstat <base> <snapshot>' },
     results: {
       type: 'array',
       items: {
@@ -59,7 +60,7 @@ const VER = {
       },
     },
   },
-  required: ['snapshot', 'results'],
+  required: ['snapshot', 'shortstat', 'results'],
 }
 const FINDING = {
   type: 'object',
@@ -93,6 +94,14 @@ const REVIEW = {
 }
 
 const fmt = (f) => `${f.severity} | ${f.file} | ${f.problem} | ${f.evidence}`
+const brief = (f) => `${f.file} | ${f.problem}`
+// A second reviewer with its own lens runs only on the first review of a large diff.
+const BIG_LINES = 300
+const BIG_FILES = 8
+const isBig = (stat) => {
+  const num = (re) => Number((String(stat || '').match(re) || [0, 0])[1])
+  return num(/(\d+) files? changed/) > BIG_FILES || num(/(\d+) insertions?/) + num(/(\d+) deletions?/) > BIG_LINES
+}
 const fileOf = (f) => String(f.file || '').split(':')[0]
 const fromSkeptic = (sk) => [
   ...(sk.criteria || []).filter((c) => c.verdict === 'FAIL')
@@ -109,6 +118,8 @@ let skepticCriteria = CRITERIA
 let lastSkeptic = null
 let lastVerifier = null
 let nonBlocking = []
+let reported = []
+let reviewed = false
 let notDone = []
 let status = 'лимит итераций'
 let iterations = 0
@@ -139,7 +150,7 @@ for (let n = 1; n <= MAX; n++) {
 
   // 2. Verify: snapshot first, then the cheap checks.
   const ver = await agent(
-    `Repo root: ${A.repo}\n\nFirst take the snapshot of the working copy with exactly this command (it uses a temporary index, the real index and files are not touched) and return the printed hash as \`snapshot\`:\n\n${snapshotCmd}\n\nThen run the checks. Project commands:\n${commands}\n\nChanged files: \`git -C "${A.repo}" diff --name-only ${A.base} <snapshot>\`. Range to tell new failures from pre-existing ones: ${A.base} <snapshot>.`,
+    `Repo root: ${A.repo}\n\nFirst take the snapshot of the working copy with exactly this command (it uses a temporary index, the real index and files are not touched) and return the printed hash as \`snapshot\`:\n\n${snapshotCmd}\n\nReturn the output of \`git -C "${A.repo}" diff --shortstat ${A.base} <snapshot>\` as \`shortstat\`. Then run the checks. Project commands:\n${commands}\n\nChanged files: \`git -C "${A.repo}" diff --name-only ${A.base} <snapshot>\`. Range to tell new failures from pre-existing ones: ${A.base} <snapshot>.`,
     { agentType: 'lp-task-loop:verifier', schema: VER, label: `verify #${n}`, phase: 'Verify', effort: 'low' },
   )
   if (!ver || !ver.snapshot) { status = 'ошибка агента'; break }
@@ -171,19 +182,33 @@ for (let n = 1; n <= MAX; n++) {
     if (!blocking.length && overBudget(n)) { status = 'лимит токенов'; prevSnap = snap; prevBlocking = []; break }
 
     // 3b. Reviewer: code quality, only when the skeptic found nothing.
+    // First review: the whole diff. Later ones: the full diff of the files the fix touched, the fix itself as the focus.
     if (!blocking.length) {
-      const from = n === 1 ? A.base : prevSnap
       const accepted = disputes.filter((d) => d.accepted).map((d) => d.finding)
-      const rv = await agent(
-        `Repo root: ${A.repo}\n\nTask:\n${A.task}\n\nDiff range to review: ${from} ${snap} (\`git -C "${A.repo}" diff ${from} ${snap}\`).` +
-          (prevBlocking.length ? `\n\nPrevious blocking findings, say for each whether it is fixed:\n${prevBlocking.map(fmt).join('\n')}` : '') +
-          (accepted.length ? `\n\nDo not report these again, the skeptic accepted the implementer's argument:\n${accepted.join('\n')}` : ''),
-        { agentType: 'lp-task-loop:reviewer', schema: REVIEW, label: `review #${n}`, phase: 'Review' },
-      )
-      if (!rv) { status = 'ошибка агента'; break }
-      const fs = rv.findings || []
+      const range = !reviewed
+        ? `Diff range to review: ${A.base} ${snap} (\`git -C "${A.repo}" diff ${A.base} ${snap}\`).`
+        : `Diff range to review: ${A.base} ${snap}, only the files the last fix touched (\`git -C "${A.repo}" diff ${A.base} ${snap} -- $(git -C "${A.repo}" diff --name-only ${prevSnap} ${snap})\`). Focus on the last fix (\`git -C "${A.repo}" diff ${prevSnap} ${snap}\`) and on how it interacts with the rest of these files; do not re-read the other changed files.`
+      // Previous blocking findings stay out of «already reported»: an unfixed one must be reported again to keep blocking.
+      const known = reported.filter((r) => !prevBlocking.some((b) => r === brief(b)))
+      const common = `Repo root: ${A.repo}\n\nTask:\n${A.task}\n\n${range}` +
+        (known.length ? `\n\nAlready reported, do not report again and do not change their severity:\n${known.join('\n')}` : '') +
+        (accepted.length ? `\n\nDo not report these again, the skeptic accepted the implementer's argument:\n${accepted.join('\n')}` : '')
+      const previous = prevBlocking.length ? `\n\nPrevious blocking findings, say for each whether it is fixed; report one that is not fixed again as a finding:\n${prevBlocking.map(fmt).join('\n')}` : ''
+      const split = !reviewed && isBig(ver.shortstat)
+      const rvs = split
+        ? await parallel([
+          () => agent(common + previous + '\n\nLens: correctness, edge cases, callers of the changed code.', { agentType: 'lp-task-loop:reviewer', schema: REVIEW, label: `review #${n} correctness`, phase: 'Review' }),
+          () => agent(common + '\n\nLens: security, error handling, concurrency and async. Do not invoke the lp-code-review skill, use your own checklist.', { agentType: 'lp-task-loop:reviewer', schema: REVIEW, label: `review #${n} security`, phase: 'Review' }),
+        ])
+        : [await agent(common + previous, { agentType: 'lp-task-loop:reviewer', schema: REVIEW, label: `review #${n}`, phase: 'Review' })]
+      const ok = rvs.filter(Boolean)
+      if (!ok.length) { status = 'ошибка агента'; break }
+      reviewed = true
+      const seen = new Set()
+      const fs = ok.flatMap((r) => r.findings || []).filter((f) => !seen.has(f.file) && seen.add(f.file))
+      reported.push(...fs.map(brief))
       blocking = fs.filter((f) => f.severity === 'critical' || f.severity === 'high').map((f) => ({ ...f, source: 'reviewer' }))
-      nonBlocking = fs.filter((f) => f.severity === 'medium' || f.severity === 'low')
+      nonBlocking = [...nonBlocking.filter((f) => !fs.some((g) => g.file === f.file)), ...fs.filter((f) => f.severity === 'medium' || f.severity === 'low')]
 
       // Final full skeptic pass if the last one did not cover every criterion.
       if (!blocking.length && !full && overBudget(n)) { status = 'лимит токенов'; prevSnap = snap; prevBlocking = []; break }

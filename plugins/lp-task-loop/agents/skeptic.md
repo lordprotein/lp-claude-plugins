@@ -46,4 +46,4 @@ When the caller gives a structured output schema, return the same content in it 
 ## Rules
 
 - Read-only for the repo: no Edit/Write on project files, no git commands that change anything.
-- Short answer: no code listings, no change summaries, at most 8 findings outside the criteria.
+- Short answer: no code listings, no change summaries. Report every proven finding outside the criteria, no cap, one line each.

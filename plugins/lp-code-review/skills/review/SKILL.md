@@ -63,6 +63,15 @@ If no argument is provided → proceed to step 1 (default git diff review).
 - **Large diff (>500 lines)**: Summarize by file first, then review in batches by module/feature area.
 - **Mixed concerns**: Group findings by logical feature, not just file order.
 
+### 1b) Correctness pass
+
+Runs in every mode, before SOLID: logic bugs matter more than design smells. Work in your head, do not print the inventory, only findings go into the output.
+
+1. List every changed function, branch, handler and effect in scope.
+2. For each: what it should do against what it actually does; the data flow from input to output; empty/null/boundary values from `references/code-quality-checklist.md` (load it here, step 5 reuses it); failures and their propagation; async and state (order, races, cancellation, repeated or concurrent calls, stale values).
+3. Callers: grep the usages only when a signature, data shape, export or observable behavior changed, not for every function.
+4. Record findings in `## Findings` (🛡 Security & Reliability for failures and races, 🧹 Code Quality for logic errors) with the usual severity.
+
 ### 2) SOLID + architecture smells
 
 - Load `references/solid-checklist.md` for general SOLID prompts.
@@ -96,22 +105,26 @@ If no argument is provided → proceed to step 1 (default git diff review).
 
 ### 4) Security and reliability scan
 
-- Load `references/security-checklist.md` and check every section of it.
+- Load `references/security-checklist.md` and check the sections that apply to the scope (skip e.g. SQL injection when no query is built, XSS when nothing is rendered as HTML); say nothing about skipped sections.
 - **New dependencies**: If new packages were added, check justification (could stdlib solve it?), maintenance status, and bundle size impact. Flag unjustified or unmaintained additions as 🟡 Medium.
 - Call out both **exploitability** and **impact**.
 
 ### 5) Code quality scan
 
-- Load `references/code-quality-checklist.md` and check every section of it (error handling, boundary conditions).
+- Check every section of `references/code-quality-checklist.md` (already loaded in step 1b) that step 1b did not cover.
 - **Test coverage gap**: If changed code lacks corresponding test updates, flag as 🟡 Medium. Note which behaviors are untested. Do NOT write tests — only flag the gap.
 - **Breaking changes**: Check for renamed/removed public APIs, changed function signatures, altered response shapes, removed exports. If the change is in a shared library or API layer, flag breaking changes as 🟠 High with migration guidance.
 - Flag issues that may cause silent failures or production incidents.
 
 ### 6) Performance scan
 
-- Load `references/performance-checklist.md` and check every section of it.
+- Load `references/performance-checklist.md` only when the scope has loops over data, rendering, network or storage calls, caching or large inputs; check the sections that apply.
 - For each finding, estimate impact: note input size sensitivity and expected degradation pattern.
 - All performance findings go into the `### ⚡ Performance` category within the `## Findings` section.
+
+### Completeness rule
+
+Report every finding: no cap on their number, merge only true duplicates (same root cause). Do not stop once a few findings are found. Before writing the output, walk the inventory of step 1b once more (from memory, without re-reading files) and ask for each unit «what else can break here». A plausible problem you could not prove goes in with «(не подтверждено)» in its title instead of being dropped.
 
 ### 7) Output format
 

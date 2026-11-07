@@ -20,7 +20,7 @@ If it reports a new failure (not `pre-existing`), skip step 3: its failures are 
 ### 3. Skeptic, then reviewer
 
 - `lp-task-loop:skeptic`: the task, the criteria, the repo root, the full range `<base> <sN>`, the implementer's report, and the `Evidence:` block if there is one. When N ≥ 2: only the criteria that were FAIL in the last skeptic run plus every criterion touched by the delta files (list them), and the implementer's disputes with their arguments.
-- then, only if the skeptic has no `FAIL` and no findings: `lp-task-loop:reviewer`: the task, the repo root, the diff range to review: `<base> <sN>` when N = 1, otherwise only the delta `<s(N-1)> <sN>`, plus the previous blocking findings to confirm they are fixed.
+- then, only if the skeptic has no `FAIL` and no findings: `lp-task-loop:reviewer`: the task, the repo root, the diff range to review: the first review gets `<base> <sN>`; later reviews get `<base> <sN>` only for the files the last fix touched (`git diff <base> <sN> -- $(git diff --name-only <s(N-1)> <sN>)`) with the fix `<s(N-1)> <sN>` as the focus and «do not re-read the other changed files»; plus the previous blocking findings to confirm they are fixed (one that is not fixed is reported again as a finding) and every other reviewer finding of earlier rounds as «already reported» (`file:line | problem`, one line each). On the first review of a large diff (`git diff --shortstat` over 8 files or 300 changed lines) run two reviewers in parallel with a lens each: «correctness, edge cases, callers of the changed code» and «security, error handling, concurrency and async; do not invoke the lp-code-review skill»; merge their findings, one per `file:line`.
 
 ### 4. Decide
 
