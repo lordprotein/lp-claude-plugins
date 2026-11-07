@@ -1,7 +1,7 @@
 ---
 name: commit
 description: Commit the task changes in all of its projects (first commit "{key}: {title}" or a fix "{key}: fix (...)"), then offer to push. Use only when the user explicitly asks to commit («закоммить», «коммит», «commit»), never on your own initiative
-argument-hint: "[short fix description]"
+argument-hint: "[short fix description] [--with-comments]"
 ---
 
 # /lp-task:commit
@@ -13,6 +13,8 @@ Run only on an explicit user request to commit (the command or words like «за
 First read `${CLAUDE_PLUGIN_ROOT}/shared.md` and follow it (config, hard rules, state).
 
 A **new** commit is always created. No amend and no force push.
+
+Arguments: `--with-comments` (also `--withComments`, or a request in words such as «с описанием», «с комментарием») adds the description body to this commit even when `git.commitDescription` is `false`; remove the flag from the arguments, the rest is the fix description (`{summary}`).
 
 ## Which task
 
@@ -38,13 +40,20 @@ The template is chosen per project by its state:
   - `{summary}` — from the argument, if passed;
   - otherwise — phrase it yourself from the diff and the conversation context: in Russian, 3–8 words, starting with a lowercase letter, one common message for all fix projects.
 
-Show a table «project → changed files → message» and commit right away with these messages: do not ask whether the message is fine, choose it yourself. A different `{summary}` is passed as the argument.
+### Description
+
+Only when `git.commitDescription` is `true` or `--with-comments` is set. A separate body for every project, from its diff and the session context (task, plan, discussion), in Russian:
+- first what was done: 2–5 short items `- ...` about the behavior and the key changes, not a line-by-line retelling of the diff;
+- then the line `Почему так:` and 1–3 items `- ...`: why this solution was chosen (the cause of the bug, the alternatives rejected, the constraints);
+- lines up to ~72 characters, no AI attribution, no mentions of Claude or of the session.
+
+Show a table «project → changed files → message» (with a body: the body under the message) and commit right away with these messages: do not ask whether the message is fine, choose it yourself. A different `{summary}` is passed as the argument.
 
 ## Commit
 
 In every project with changes:
 1. `git -C <path> add` only the changed/new/deleted files from the list above (not `-A`; do not add `git.ignorePaths`).
-2. `git -C <path> commit -m "<message>"`.
+2. `git -C <path> commit -m "<message>"`; with a body `git -C <path> commit -m "<message>" -m "<body>"`.
 3. If the pre-commit hook failed:
    - because of the environment (a module not found, «No valid configuration found», no `node_modules`) — explain the reason and ask: «Сделать `<pm> install` и повторить» / «Коммит с `--no-verify`» / «Сделаю сам»;
    - because of the code — fix and retry.

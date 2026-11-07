@@ -10,6 +10,7 @@
     "branch": "{key}",
     "commit": "{key}: {title}",
     "fixCommit": "{key}: fix ({summary})",
+    "commitDescription": false,
     "mrTitle": "{key}: {title}",
     "mrDescription": ["{issueUrl}", "", "{title}", "", "{commits}"],
     "ignorePaths": []

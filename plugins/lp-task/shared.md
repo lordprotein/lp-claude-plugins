@@ -21,6 +21,7 @@ Take all templates, paths and the project list only from the merged config.
 - `git.branch` — branch name, substitute `{num}` and `{key}`.
 - `git.commit`, `git.mrTitle` — commit message and MR title, substitute `{key}` and `{title}`.
 - `git.fixCommit` — fix commit message, substitute `{key}` and `{summary}`.
+- `git.commitDescription` — add a description body to every commit: what was done and why it was done this way (default `false`: only the template line; `/lp-task:commit --with-comments` adds it for one commit).
 - `git.mrDescription[]` — PR description for `git.host: github`, one element per line; placeholders `{issueUrl}`, `{title}`, `{key}` and `{commits}` (the task commits as a list: `git -C <path> log origin/<base>..HEAD --format='- %s'`). GitLab MRs are created by push options and keep an empty description.
 - `git.ignorePaths` — untracked/local paths that never count as changes and are never committed.
 - `mrMessage.header` — the value of `{header}` in the team MR message (e.g. a team mention).
@@ -52,7 +53,7 @@ Take all templates, paths and the project list only from the merged config.
 ## Hard rules (always)
 
 1. **Never push without an explicit user command** (`/lp-task:push`, «запушь», «push», or the answer «Да» to the question «Запушить изменения?» in `/lp-task:commit`). A commit or push asked for in words goes through the skill `lp-task:commit` / `lp-task:push` (Skill tool; push step by step: MR groups, the state, the MR message), never a bare `git commit` / `git push`. All commits are made only via `lp-task:commit`; fixes — only as new commits, no amend. The plugin hook enforces it: on a task branch `git push` is denied unless the push marker exists (see «Push marker»).
-2. **Never mention Claude / Claude Code** in commits and MRs: no `Co-Authored-By`, no «Generated with», no AI attribution of any kind. The commit message is only the line built from the template.
+2. **Never mention Claude / Claude Code** in commits and MRs: no `Co-Authored-By`, no «Generated with», no AI attribution of any kind. The commit message is the line built from the template, plus the description body when `git.commitDescription` or `--with-comments` asks for it; no AI attribution in either.
 3. **Never run `git stash pop` / `git stash drop` / `git reset --hard` / `git checkout -- .` / `git restore`** on changes that were not made by you in this task without explicit permission. If a stash is needed — create it with the message `lp-task <key>` and before `pop` check with `git stash list` that `stash@{0}` is exactly yours. If `git stash` printed «No local changes to save» — the stash was NOT created, `pop` must not be run.
 4. Run all git commands via `git -C <path>` with absolute paths.
 5. Create branches only from `origin/<base>` after `git fetch`, where `<base>` is the default branch of the repository (main/master).

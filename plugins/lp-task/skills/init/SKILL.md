@@ -25,7 +25,7 @@ Warn in one line if the chosen file is inside a git repository and is not ignore
 
 Ask with AskUserQuestion (several questions per call, at most 4), suggest values detected from the environment:
 1. Tracker: «Jira» (Atlassian MCP, browser as a fallback) / «Другой (ссылка в браузере)»; then the task URL template (`tracker.issueUrl`, e.g. `https://<site>/browse/{key}`) and the key prefix (to build `tracker.keyRegex`, e.g. `(ACME)-(\\d+)`; empty — any key).
-2. Branch name: «`{key}`» / «`<PREFIX>-{num}`» / «`feature/{key}`»; commit and MR title templates — keep the defaults unless the user wants their own.
+2. Branch name: «`{key}`» / «`<PREFIX>-{num}`» / «`feature/{key}`»; commit and MR title templates — keep the defaults unless the user wants their own; `git.commitDescription` stays `false` unless the user wants a description body (what was done and why) in every commit.
 3. Git host: detect from `git remote get-url origin` (gitlab / github) and confirm.
 4. MR message header (e.g. a team mention) — empty by default.
 5. Projects: the current repository by default; offer the sibling git repositories of the chosen folder (for «В родительской папке»). For every project detect `pm` by the lock file (`yarn.lock` → yarn, `pnpm-lock.yaml` → pnpm, `package-lock.json` → npm, `bun.lockb` → bun) and ask only about `label`, `mobile` and `autoDetectOnly` when it is not obvious.
